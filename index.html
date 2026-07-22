@@ -421,6 +421,19 @@
             font-size: 0.7rem;
             font-weight: 600;
         }
+        .ocr-debug {
+            background: #f8f9fc;
+            border-radius: 12px;
+            padding: 0.5rem 0.8rem;
+            font-size: 0.75rem;
+            color: #4a5a72;
+            border: 1px solid #e2eaf6;
+            margin-top: 0.3rem;
+            max-height: 60px;
+            overflow-y: auto;
+            word-break: break-all;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
@@ -453,10 +466,11 @@
                         </div>
                         <button class="btn btn-primary" id="ocrFrontBtn" style="width: 100%; justify-content: center;">🧠 Leer CURP</button>
                         <div id="ocrFrontStatus" class="ocr-status" style="font-size: 0.8rem;">⏳ Esperando imagen</div>
+                        <div id="ocrFrontDebug" class="ocr-debug" style="display:none;"></div>
                     </div>
                     <div class="manual-input">
                         <label>✏️ CURP:</label>
-                        <input type="text" id="manualCURP" placeholder="Ej: SACA020806HTCNHRA3" style="flex:2;">
+                        <input type="text" id="manualCURP" placeholder="Ej: HEOG930215MJCKRRO7" style="flex:2;">
                         <button class="btn btn-sm btn-outline" id="setCURPBtn">Aplicar</button>
                     </div>
                 </div>
@@ -473,6 +487,7 @@
                         </div>
                         <button class="btn btn-primary" id="ocrBackBtn" style="width: 100%; justify-content: center;">🧠 Leer número</button>
                         <div id="ocrBackStatus" class="ocr-status" style="font-size: 0.8rem;">⏳ Esperando imagen</div>
+                        <div id="ocrBackDebug" class="ocr-debug" style="display:none;"></div>
                     </div>
                     <div class="manual-input">
                         <label>✏️ Número (13 dígitos):</label>
@@ -545,6 +560,7 @@
             const previewFront = document.getElementById('previewFront');
             const ocrFrontBtn = document.getElementById('ocrFrontBtn');
             const ocrFrontStatus = document.getElementById('ocrFrontStatus');
+            const ocrFrontDebug = document.getElementById('ocrFrontDebug');
             const manualCURP = document.getElementById('manualCURP');
             const setCURPBtn = document.getElementById('setCURPBtn');
             const dropZoneFront = document.getElementById('dropZoneFront');
@@ -553,6 +569,7 @@
             const previewBack = document.getElementById('previewBack');
             const ocrBackBtn = document.getElementById('ocrBackBtn');
             const ocrBackStatus = document.getElementById('ocrBackStatus');
+            const ocrBackDebug = document.getElementById('ocrBackDebug');
             const manualNumero = document.getElementById('manualNumero');
             const setNumeroBtn = document.getElementById('setNumeroBtn');
             const dropZoneBack = document.getElementById('dropZoneBack');
@@ -590,6 +607,7 @@
             function isValidCURP(curp) {
                 if (!curp) return false;
                 const cleaned = curp.trim().toUpperCase();
+                // Formato: 4 letras, 6 dígitos, 5 caracteres alfanuméricos
                 return /^[A-Z]{4}\d{6}[A-Z0-9]{5}$/.test(cleaned);
             }
 
@@ -599,35 +617,80 @@
                 return /^\d{13}$/.test(cleaned);
             }
 
+            // ---- Extraer INE (número y CURP) MEJORADO ----
             function extractINEData(text) {
                 if (!text || text.trim() === '') {
                     return { numero: '', curp: '' };
                 }
-                const cleanText = text.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+
+                // Limpiar texto: eliminar caracteres especiales, mantener letras/números/espacios
+                let cleanText = text.replace(/[^A-Za-z0-9\s<>\n]/g, ' ').replace(/\s+/g, ' ').trim();
 
                 let numero = '';
+                let curp = '';
+
+                // 1. Buscar CURP - Múltiples patrones
+                const curpPatterns = [
+                    // Patrón estándar: 4 letras + 6 dígitos + 5 alfanuméricos
+                    /\b([A-Z]{4}\d{6}[A-Z0-9]{5})\b/gi,
+                    // CURP precedida por "CURP" o "CURP:"
+                    /CURP\s*:?\s*([A-Z]{4}\d{6}[A-Z0-9]{5})/gi,
+                    // CURP en línea separada
+                    /^([A-Z]{4}\d{6}[A-Z0-9]{5})$/gm,
+                    // CURP con espacios entre letras (ej: H E O G 9 3 0 2 1 5 M J C K R R O 7)
+                    /([A-Z])\s*([A-Z])\s*([A-Z])\s*([A-Z])\s*(\d)\s*(\d)\s*(\d)\s*(\d)\s*(\d)\s*(\d)\s*([A-Z0-9])\s*([A-Z0-9])\s*([A-Z0-9])\s*([A-Z0-9])\s*([A-Z0-9])/g
+                ];
+
+                for (let pattern of curpPatterns) {
+                    const match = cleanText.match(pattern);
+                    if (match) {
+                        let candidate = match[0] || match[1] || '';
+                        // Si es el patrón con espacios, reconstruir
+                        if (candidate.length < 18 && candidate.match(/^[A-Z\d\s]+$/)) {
+                            // Reconstruir CURP desde partes
+                            const parts = candidate.match(/[A-Z\d]/g);
+                            if (parts && parts.length === 18) {
+                                candidate = parts.join('');
+                            }
+                        }
+                        candidate = candidate.replace(/\s/g, '').toUpperCase();
+                        if (isValidCURP(candidate)) {
+                            curp = candidate;
+                            break;
+                        }
+                    }
+                }
+
+                // Si no se encontró CURP, buscar cualquier cadena que parezca CURP
+                if (!curp) {
+                    const possibleCurps = cleanText.match(/\b[A-Z]{3,5}\d{5,7}[A-Z0-9]{3,6}\b/g);
+                    if (possibleCurps) {
+                        for (let c of possibleCurps) {
+                            const cleaned = c.replace(/\s/g, '').toUpperCase();
+                            if (isValidCURP(cleaned)) {
+                                curp = cleaned;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // 2. Buscar número de 13 dígitos
+                // Patrón: << seguido de 13 dígitos
                 const numRegex = /<<\s*(\d{13})/;
                 const numMatch = cleanText.match(numRegex);
                 if (numMatch) {
                     numero = numMatch[1];
                 } else {
+                    // Buscar 13 dígitos consecutivos
                     const fallbackNum = cleanText.match(/\b(\d{13})\b/);
                     if (fallbackNum) numero = fallbackNum[1];
-                }
-
-                let curp = '';
-                const curpRegex = /\b([A-Z]{4}\d{6}[A-Z0-9]{5})\b/;
-                const curpMatch = cleanText.match(curpRegex);
-                if (curpMatch) {
-                    curp = curpMatch[1];
-                } else {
-                    const looseCurp = cleanText.match(/\b([A-Z]{4}\d{6}[A-Z0-9]{5})\b/i);
-                    if (looseCurp) curp = looseCurp[1].toUpperCase();
                 }
 
                 return { numero, curp };
             }
 
+            // ---- Organizar información del cliente ----
             function organizeClientInfo(text) {
                 if (!text || text.trim() === '') {
                     return {
@@ -779,6 +842,7 @@
             async function processImage(file, type) {
                 const isFront = type === 'front';
                 const statusEl = isFront ? ocrFrontStatus : ocrBackStatus;
+                const debugEl = isFront ? ocrFrontDebug : ocrBackDebug;
                 const btnEl = isFront ? ocrFrontBtn : ocrBackBtn;
                 const previewEl = isFront ? previewFront : previewBack;
 
@@ -795,21 +859,30 @@
                 reader.readAsDataURL(file);
 
                 statusEl.textContent = '⏳ Procesando...';
+                debugEl.style.display = 'block';
+                debugEl.textContent = 'Iniciando OCR...';
                 btnEl.disabled = true;
 
                 try {
+                    // Configurar Tesseract con mejores parámetros para texto pequeño
                     const imageUrl = URL.createObjectURL(file);
-                    const result = await Tesseract.recognize(imageUrl, 'spa', {
-                        logger: (m) => {
-                            if (m.status === 'recognizing text') {
-                                statusEl.textContent = `📖 Leyendo... ${Math.round(m.progress * 100)}%`;
+                    const result = await Tesseract.recognize(
+                        imageUrl,
+                        'spa',
+                        {
+                            logger: (m) => {
+                                if (m.status === 'recognizing text') {
+                                    statusEl.textContent = `📖 Leyendo... ${Math.round(m.progress * 100)}%`;
+                                    debugEl.textContent = `Progreso: ${Math.round(m.progress * 100)}%`;
+                                }
                             }
                         }
-                    });
+                    );
                     URL.revokeObjectURL(imageUrl);
 
                     const ocrText = result.data.text;
                     statusEl.textContent = '✅ Imagen procesada.';
+                    debugEl.textContent = `📝 Texto OCR: ${ocrText.substring(0, 200)}${ocrText.length > 200 ? '...' : ''}`;
 
                     const extracted = extractINEData(ocrText);
 
@@ -819,10 +892,29 @@
                             curpExtracted.style.display = 'inline-block';
                             manualCURP.value = extracted.curp;
                             statusEl.textContent = '✅ CURP detectada: ' + extracted.curp;
+                            debugEl.textContent += `\n✅ CURP encontrada: ${extracted.curp}`;
                         } else {
-                            statusEl.textContent = '⚠️ No se detectó CURP. Ingresa manualmente.';
-                            const preview = ocrText.replace(/\n/g, ' ').substring(0, 150);
-                            if (preview) statusEl.textContent += ` (Texto: ${preview}...)`;
+                            // Buscar CURP en el texto de manera más agresiva
+                            const possibleCurps = ocrText.match(/[A-Z]{3,5}\d{5,7}[A-Z0-9]{3,6}/gi);
+                            let found = false;
+                            if (possibleCurps) {
+                                for (let c of possibleCurps) {
+                                    const cleaned = c.replace(/\s/g, '').toUpperCase();
+                                    if (isValidCURP(cleaned)) {
+                                        extractedData.curp = cleaned;
+                                        curpExtracted.style.display = 'inline-block';
+                                        manualCURP.value = cleaned;
+                                        statusEl.textContent = '✅ CURP detectada: ' + cleaned;
+                                        debugEl.textContent += `\n✅ CURP encontrada (alternativa): ${cleaned}`;
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!found) {
+                                statusEl.textContent = '⚠️ No se detectó CURP. Ingresa manualmente.';
+                                debugEl.textContent += '\n⚠️ No se encontró CURP válida en el texto OCR.';
+                            }
                         }
                     } else {
                         if (extracted.numero && isValidNumero(extracted.numero)) {
@@ -830,17 +922,31 @@
                             numExtracted.style.display = 'inline-block';
                             manualNumero.value = extracted.numero;
                             statusEl.textContent = '✅ Número detectado: ' + extracted.numero;
+                            debugEl.textContent += `\n✅ Número encontrado: ${extracted.numero}`;
                         } else {
-                            statusEl.textContent = '⚠️ No se detectó el número. Ingresa manualmente.';
-                            const preview = ocrText.replace(/\n/g, ' ').substring(0, 150);
-                            if (preview) statusEl.textContent += ` (Texto: ${preview}...)`;
+                            // Buscar 13 dígitos en el texto
+                            const possibleNums = ocrText.match(/\b\d{13}\b/g);
+                            if (possibleNums && possibleNums.length > 0) {
+                                const num = possibleNums[0];
+                                if (isValidNumero(num)) {
+                                    extractedData.numero = num;
+                                    numExtracted.style.display = 'inline-block';
+                                    manualNumero.value = num;
+                                    statusEl.textContent = '✅ Número detectado: ' + num;
+                                    debugEl.textContent += `\n✅ Número encontrado: ${num}`;
+                                }
+                            } else {
+                                statusEl.textContent = '⚠️ No se detectó el número. Ingresa manualmente.';
+                                debugEl.textContent += '\n⚠️ No se encontraron 13 dígitos consecutivos.';
+                            }
                         }
                     }
 
                     mergeAllData();
-                    console.log('OCR:', ocrText);
+                    console.log('OCR Texto completo:', ocrText);
                 } catch (error) {
                     statusEl.textContent = '❌ Error: ' + error.message;
+                    debugEl.textContent = `❌ Error: ${error.message}`;
                     console.error(error);
                 } finally {
                     btnEl.disabled = false;
@@ -909,7 +1015,7 @@
                     mergeAllData();
                     ocrFrontStatus.textContent = '✅ CURP ingresada manualmente: ' + val;
                 } else {
-                    alert('Formato de CURP inválido. Debe tener 4 letras, 6 dígitos y 5 caracteres alfanuméricos.');
+                    alert('Formato de CURP inválido. Debe tener 4 letras, 6 dígitos y 5 caracteres alfanuméricos.\nEjemplo: HEOG930215MJCKRRO7');
                 }
             }
 
@@ -922,7 +1028,7 @@
                     mergeAllData();
                     ocrBackStatus.textContent = '✅ Número ingresado manualmente: ' + val;
                 } else {
-                    alert('Número inválido. Debe tener exactamente 13 dígitos.');
+                    alert('Número inválido. Debe tener exactamente 13 dígitos.\nEjemplo: 9209913531231');
                 }
             }
 
@@ -934,6 +1040,8 @@
                 previewBack.style.display = 'none';
                 ocrFrontStatus.textContent = '⏳ Esperando imagen';
                 ocrBackStatus.textContent = '⏳ Esperando imagen';
+                ocrFrontDebug.style.display = 'none';
+                ocrBackDebug.style.display = 'none';
                 curpExtracted.style.display = 'none';
                 numExtracted.style.display = 'none';
                 manualCURP.value = '';
@@ -996,6 +1104,7 @@
                     };
                     reader.readAsDataURL(file);
                     ocrFrontStatus.textContent = '🖼️ Imagen lista. Presiona "Leer CURP".';
+                    ocrFrontDebug.style.display = 'none';
                 }
             });
 
@@ -1019,6 +1128,7 @@
                     };
                     reader.readAsDataURL(file);
                     ocrBackStatus.textContent = '🖼️ Imagen lista. Presiona "Leer número".';
+                    ocrBackDebug.style.display = 'none';
                 }
             });
 
@@ -1048,6 +1158,8 @@
             // Inicializar
             setTimeout(() => {
                 mergeAllData();
+                // Pre-cargar ejemplo de CURP en el campo manual
+                manualCURP.placeholder = 'Ej: HEOG930215MJCKRRO7';
             }, 150);
         })();
     </script>
