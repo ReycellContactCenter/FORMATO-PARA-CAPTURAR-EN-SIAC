@@ -165,7 +165,7 @@
         }
         .preview-img {
             max-width: 100%;
-            max-height: 120px;
+            max-height: 150px;
             border-radius: 18px;
             margin: 0.4rem 0 0.2rem;
             border: 1px solid #dfe7f0;
@@ -307,6 +307,7 @@
             border-radius: 16px;
             padding: 1rem;
             border: 1px solid #e4eaf3;
+            position: relative;
         }
         .image-card h3 {
             font-size: 0.9rem;
@@ -333,6 +334,93 @@
         .merge-section .btn {
             margin-top: 0;
         }
+        .manual-input {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+            align-items: center;
+        }
+        .manual-input input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ccd7e8;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-family: 'Segoe UI', monospace;
+            flex: 1;
+            min-width: 150px;
+        }
+        .manual-input input:focus {
+            outline: 2px solid #2563eb;
+            border-color: transparent;
+        }
+        .manual-input label {
+            font-weight: 500;
+            color: #1f3a5e;
+            font-size: 0.85rem;
+        }
+        .btn-sm {
+            padding: 0.4rem 1.2rem;
+            font-size: 0.85rem;
+            margin-top: 0;
+        }
+        .tip-box {
+            background: #fef9e7;
+            border-left: 4px solid #f59e0b;
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: #78350f;
+        }
+        .tip-box strong {
+            color: #b45309;
+        }
+        .example-badge {
+            background: #e8edf6;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            color: #1f3a5e;
+            font-weight: 500;
+        }
+        .drop-zone {
+            border: 2px dashed #b7c8e2;
+            border-radius: 20px;
+            padding: 1rem;
+            text-align: center;
+            transition: 0.2s;
+            background: #fafcff;
+            cursor: pointer;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .drop-zone.dragover {
+            border-color: #2563eb;
+            background: #edf3fe;
+        }
+        .drop-zone .drop-text {
+            color: #6b7d9a;
+            font-size: 0.85rem;
+        }
+        .drop-zone .drop-text strong {
+            color: #2563eb;
+        }
+        .paste-hint {
+            font-size: 0.75rem;
+            color: #8a9bb0;
+            margin-top: 0.3rem;
+        }
+        .paste-hint kbd {
+            background: #e8edf6;
+            padding: 0.1rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -342,39 +430,54 @@
             <a href="https://github.com" target="_blank" class="github-badge">🔗 GitHub</a>
         </div>
         <div class="subhead">
-            Sube ambas imágenes de la INE (anverso y reverso) + pega información adicional · Todo se organiza en una sola sección
+            Sube imágenes recortadas · <kbd>Ctrl+V</kbd> para pegar desde portapapeles · Arrastra y suelta archivos
         </div>
 
         <!-- SECCIÓN 1: EXTRACCIÓN DE IMÁGENES (INE) -->
         <div class="card" style="margin-bottom: 2rem;">
             <h2><span>🖼️</span> Sección 1 · Extraer de imágenes INE</h2>
+            <div class="tip-box">
+                💡 <strong>Consejo:</strong> Usa <kbd>Ctrl+V</kbd> (Windows) o <kbd>⌘+V</kbd> (Mac) para pegar una imagen desde el portapapeles. También puedes arrastrar y soltar archivos.
+            </div>
             <div class="image-grid">
                 <div class="image-card">
-                    <h3>📸 Anverso (CURP)</h3>
+                    <h3>📸 CURP</h3>
                     <div class="file-upload-wrap">
-                        <label class="file-label" for="imageFront">
-                            <span>📤 Seleccionar imagen</span>
-                            <input type="file" id="imageFront" accept="image/*">
-                        </label>
-                        <div style="display: flex; justify-content: center;">
-                            <img id="previewFront" class="preview-img" style="display: none;" alt="Vista previa anverso">
+                        <div class="drop-zone" id="dropZoneFront">
+                            <span class="drop-text">📤 <strong>Arrastra</strong> una imagen o <strong>haz clic</strong> para seleccionar</span>
+                            <span class="paste-hint">O usa <kbd>Ctrl+V</kbd> para pegar desde el portapapeles</span>
+                            <input type="file" id="imageFront" accept="image/*" style="display:none;">
                         </div>
-                        <button class="btn btn-primary" id="ocrFrontBtn" style="width: 100%; justify-content: center;">🧠 OCR Anverso</button>
+                        <div style="display: flex; justify-content: center;">
+                            <img id="previewFront" class="preview-img" style="display: none;" alt="Vista previa">
+                        </div>
+                        <button class="btn btn-primary" id="ocrFrontBtn" style="width: 100%; justify-content: center;">🧠 Leer CURP</button>
                         <div id="ocrFrontStatus" class="ocr-status" style="font-size: 0.8rem;">⏳ Esperando imagen</div>
+                    </div>
+                    <div class="manual-input">
+                        <label>✏️ CURP:</label>
+                        <input type="text" id="manualCURP" placeholder="Ej: SACA020806HTCNHRA3" style="flex:2;">
+                        <button class="btn btn-sm btn-outline" id="setCURPBtn">Aplicar</button>
                     </div>
                 </div>
                 <div class="image-card">
-                    <h3>📸 Reverso (número 13 dígitos)</h3>
+                    <h3>📸 Número 13 dígitos</h3>
                     <div class="file-upload-wrap">
-                        <label class="file-label" for="imageBack">
-                            <span>📤 Seleccionar imagen</span>
-                            <input type="file" id="imageBack" accept="image/*">
-                        </label>
-                        <div style="display: flex; justify-content: center;">
-                            <img id="previewBack" class="preview-img" style="display: none;" alt="Vista previa reverso">
+                        <div class="drop-zone" id="dropZoneBack">
+                            <span class="drop-text">📤 <strong>Arrastra</strong> una imagen o <strong>haz clic</strong> para seleccionar</span>
+                            <span class="paste-hint">O usa <kbd>Ctrl+V</kbd> para pegar desde el portapapeles</span>
+                            <input type="file" id="imageBack" accept="image/*" style="display:none;">
                         </div>
-                        <button class="btn btn-primary" id="ocrBackBtn" style="width: 100%; justify-content: center;">🧠 OCR Reverso</button>
+                        <div style="display: flex; justify-content: center;">
+                            <img id="previewBack" class="preview-img" style="display: none;" alt="Vista previa">
+                        </div>
+                        <button class="btn btn-primary" id="ocrBackBtn" style="width: 100%; justify-content: center;">🧠 Leer número</button>
                         <div id="ocrBackStatus" class="ocr-status" style="font-size: 0.8rem;">⏳ Esperando imagen</div>
+                    </div>
+                    <div class="manual-input">
+                        <label>✏️ Número (13 dígitos):</label>
+                        <input type="text" id="manualNumero" placeholder="Ej: 9209913531231" style="flex:2;">
+                        <button class="btn btn-sm btn-outline" id="setNumeroBtn">Aplicar</button>
                     </div>
                 </div>
             </div>
@@ -389,15 +492,14 @@
         <!-- SECCIÓN 2: ORGANIZAR INFORMACIÓN PEGADA -->
         <div class="section-divider"></div>
         <div class="card" style="margin-top: 1rem;">
-            <h2><span>📝</span> Sección 2 · Pegar información adicional</h2>
-            <p style="color: #4a5a72; margin-bottom: 1rem; font-size: 0.95rem;">
-                Pega el texto con los datos del cliente (nombre, teléfonos, correo, dirección). Se combinará con lo extraído de las imágenes.
+            <h2><span>📝</span> Sección 2 · Pegar información del cliente</h2>
+            <p style="color: #4a5a72; margin-bottom: 0.5rem; font-size: 0.95rem;">
+                Pega el texto con los datos del cliente. Puede estar separado por tabulaciones, comas o saltos de línea.
             </p>
-            <textarea id="textInput" placeholder="Pega aquí el texto con los datos del cliente...&#10;Ejemplo:&#10;Ma. Azucena Mariscal Ibarra&#10;3223276288&#10;3223483190&#10;azucena.mariscal01@gmail.com&#10;Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta, CP 48290">Ma. Azucena Mariscal Ibarra
-3223276288
-3223483190
-azucena.mariscal01@gmail.com
-Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta, CP 48290</textarea>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.8rem;">
+                <span class="example-badge">📌 Ejemplo: Josefina Garcia Hurtado 	4423821707	4425472273	frabyclar@gmail.com	Rio Queretaro 204, entre Rio Moctezuma y Rio Yaqui, Menchaca ll, Queretaro, CP 76147</span>
+            </div>
+            <textarea id="textInput" placeholder="Pega aquí el texto con los datos del cliente...">Josefina Garcia Hurtado 	4423821707	4425472273	frabyclar@gmail.com	Rio Queretaro 204, entre Rio Moctezuma y Rio Yaqui, Menchaca ll, Queretaro, CP 76147</textarea>
         </div>
 
         <!-- SECCIÓN 3: RESULTADO UNIFICADO -->
@@ -416,7 +518,7 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
                     <span class="empty-text">Esperando datos de imágenes y texto...</span>
                 </div>
             </div>
-            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem; font-size: 0.85rem; color: #4a5a72;">
+            <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.8rem; font-size: 0.85rem; color: #4a5a72; background: white; padding: 0.8rem 1rem; border-radius: 16px; border: 1px solid #e2eaf6;">
                 <span>🔢 Número INE: <strong id="displayNumero">—</strong></span>
                 <span>🆔 CURP: <strong id="displayCURP">—</strong></span>
                 <span>👤 Nombre: <strong id="displayNombre">—</strong></span>
@@ -428,7 +530,7 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
 
         <hr>
         <div class="footer-note">
-            ⚡ Extrae CURP y número de 13 dígitos de las imágenes INE · Organiza datos del cliente en un solo lugar.
+            ⚡ <kbd>Ctrl+V</kbd> para pegar imágenes · Arrastra y suelta archivos · Organiza texto con separadores
             <br>
             <span style="font-size: 0.8rem; color: #8a9bb0;">📁 Compatible con GitHub Pages</span>
         </div>
@@ -439,28 +541,29 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
             "use strict";
 
             // ========== DOM ==========
-            // Anverso (CURP)
             const imageFront = document.getElementById('imageFront');
             const previewFront = document.getElementById('previewFront');
             const ocrFrontBtn = document.getElementById('ocrFrontBtn');
             const ocrFrontStatus = document.getElementById('ocrFrontStatus');
+            const manualCURP = document.getElementById('manualCURP');
+            const setCURPBtn = document.getElementById('setCURPBtn');
+            const dropZoneFront = document.getElementById('dropZoneFront');
 
-            // Reverso (número)
             const imageBack = document.getElementById('imageBack');
             const previewBack = document.getElementById('previewBack');
             const ocrBackBtn = document.getElementById('ocrBackBtn');
             const ocrBackStatus = document.getElementById('ocrBackStatus');
+            const manualNumero = document.getElementById('manualNumero');
+            const setNumeroBtn = document.getElementById('setNumeroBtn');
+            const dropZoneBack = document.getElementById('dropZoneBack');
 
-            // Texto adicional
             const textInput = document.getElementById('textInput');
 
-            // Resultados unificados
             const mergeBtn = document.getElementById('mergeBtn');
             const clearAllBtn = document.getElementById('clearAllBtn');
             const copyMergedBtn = document.getElementById('copyMergedBtn');
             const mergedOutput = document.getElementById('mergedOutput');
 
-            // Display de campos
             const displayNumero = document.getElementById('displayNumero');
             const displayCURP = document.getElementById('displayCURP');
             const displayNombre = document.getElementById('displayNombre');
@@ -468,7 +571,6 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
             const displayRef = document.getElementById('displayRef');
             const displayCorreo = document.getElementById('displayCorreo');
 
-            // Badges
             const curpExtracted = document.getElementById('curpExtracted');
             const numExtracted = document.getElementById('numExtracted');
 
@@ -485,7 +587,18 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
 
             // ========== FUNCIONES ==========
 
-            // ---- Extraer INE (número y CURP) ----
+            function isValidCURP(curp) {
+                if (!curp) return false;
+                const cleaned = curp.trim().toUpperCase();
+                return /^[A-Z]{4}\d{6}[A-Z0-9]{5}$/.test(cleaned);
+            }
+
+            function isValidNumero(num) {
+                if (!num) return false;
+                const cleaned = num.trim().replace(/\s/g, '');
+                return /^\d{13}$/.test(cleaned);
+            }
+
             function extractINEData(text) {
                 if (!text || text.trim() === '') {
                     return { numero: '', curp: '' };
@@ -515,7 +628,6 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
                 return { numero, curp };
             }
 
-            // ---- Organizar información del cliente ----
             function organizeClientInfo(text) {
                 if (!text || text.trim() === '') {
                     return {
@@ -527,14 +639,55 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
                     };
                 }
 
-                const lines = text.split(/\n/).map(l => l.trim()).filter(l => l.length > 0);
+                let parts = text.split(/\t+/).map(s => s.trim()).filter(s => s.length > 0);
+
+                if (parts.length >= 5) {
+                    return {
+                        nombre: parts[0] || '',
+                        celular: parts[1] || '',
+                        celularRef: parts[2] || '',
+                        correo: parts[3] || '',
+                        direccion: parts.slice(4).join(' ') || ''
+                    };
+                }
+
+                const lines = text.split(/[;\n]+/).map(l => l.trim()).filter(l => l.length > 0);
+
+                if (lines.length === 1 && text.includes(',')) {
+                    const commaParts = text.split(/,\s*/).map(s => s.trim());
+                    let email = '';
+                    const emailRegex = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
+                    const emailMatch = text.match(emailRegex);
+                    if (emailMatch) email = emailMatch[0];
+
+                    const phoneRegex = /\b\d{10}\b/g;
+                    const phones = text.match(phoneRegex) || [];
+
+                    const addressMatch = text.match(/(?:[Cc]alle|[Aa]v\.|[Rr]io).*?(?:CP\s*\d{5}|\d{5})/);
+                    let address = addressMatch ? addressMatch[0] : '';
+
+                    let nombre = text;
+                    phones.forEach(p => nombre = nombre.replace(p, ''));
+                    if (email) nombre = nombre.replace(email, '');
+                    if (address) nombre = nombre.replace(address, '');
+                    nombre = nombre.replace(/[,;]\s*/g, ' ').trim();
+
+                    return {
+                        nombre: nombre || '',
+                        celular: phones.length > 0 ? phones[0] : '',
+                        celularRef: phones.length > 1 ? phones[1] : '',
+                        correo: email || '',
+                        direccion: address || ''
+                    };
+                }
+
+                const lineParts = text.split(/\n/).map(l => l.trim()).filter(l => l.length > 0);
                 let nombre = '',
                     celular = '',
                     celularRef = '',
                     correo = '',
                     direccion = '';
 
-                // 1. Extraer correo
                 const emailRegex = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
                 const allText = text;
                 const emailMatch = allText.match(emailRegex);
@@ -542,81 +695,43 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
                     correo = emailMatch[0];
                 }
 
-                // 2. Extraer teléfonos
-                const phoneRegex = /(?:\+?[\d]{1,3}[\s\-.]?)?\(?[\d]{2,4}\)?[\s\-.]?[\d]{2,4}[\s\-.]?[\d]{4,6}/g;
+                const phoneRegex = /\b\d{10}\b/g;
                 const phones = allText.match(phoneRegex) || [];
-                const cleanPhones = phones.map(p => p.replace(/[\s\-.]/g, '')).filter(p => p.length >= 10);
-
-                if (cleanPhones.length > 0) {
-                    celular = cleanPhones[0];
+                if (phones.length > 0) {
+                    celular = phones[0];
                 }
-                if (cleanPhones.length > 1) {
-                    celularRef = cleanPhones[1];
+                if (phones.length > 1) {
+                    celularRef = phones[1];
                 }
 
-                // 3. Extraer nombre y dirección
-                const addressKeywords = ['calle', 'av', 'col', 'entre', 'número', 'no.', 'avenida', 'callejón', 'cp'];
-                let possibleName = '';
-                let possibleAddress = '';
-
-                for (let line of lines) {
-                    const lower = line.toLowerCase();
-                    const isEmail = /@/.test(line);
-                    const isPhone = (line.replace(/[\s\-.]/g, '').match(/\d/g) || []).length > 8;
-                    const hasAddressKeyword = addressKeywords.some(kw => lower.includes(kw));
-                    const hasCP = /\b\d{5}\b/.test(line);
-
-                    if (isEmail || isPhone) continue;
-
-                    if (hasAddressKeyword || hasCP) {
-                        if (!possibleAddress) possibleAddress = line;
-                        continue;
-                    }
-
-                    if (line.length < 60 && !/^\d/.test(line)) {
-                        if (!possibleName) possibleName = line;
-                    }
+                const addressMatch = allText.match(/(?:[Cc]alle|[Aa]v\.|[Rr]io).*?(?:CP\s*\d{5}|\d{5})/);
+                if (addressMatch) {
+                    direccion = addressMatch[0];
                 }
 
-                if (!possibleName) {
-                    for (let line of lines) {
+                let remaining = allText;
+                phones.forEach(p => remaining = remaining.replace(p, ''));
+                if (correo) remaining = remaining.replace(correo, '');
+                if (direccion) remaining = remaining.replace(direccion, '');
+                remaining = remaining.replace(/[,;]\s*/g, ' ').trim();
+
+                if (remaining.length < 60) {
+                    nombre = remaining;
+                } else {
+                    for (let line of lineParts) {
                         const isEmail = /@/.test(line);
-                        const isPhone = (line.replace(/[\s\-.]/g, '').match(/\d/g) || []).length > 8;
-                        if (!isEmail && !isPhone) {
-                            possibleName = line;
+                        const isPhone = /\b\d{10}\b/.test(line);
+                        const isAddress = /(?:[Cc]alle|[Aa]v\.|[Rr]io).*?(?:CP\s*\d{5}|\d{5})/.test(line);
+                        if (!isEmail && !isPhone && !isAddress && line.length < 60) {
+                            nombre = line;
                             break;
                         }
                     }
-                }
-
-                if (!possibleAddress) {
-                    for (let line of lines) {
-                        const lower = line.toLowerCase();
-                        const hasAddressKeyword = addressKeywords.some(kw => lower.includes(kw));
-                        const hasCP = /\b\d{5}\b/.test(line);
-                        if (hasAddressKeyword || hasCP) {
-                            possibleAddress = line;
-                            break;
-                        }
-                    }
-                }
-
-                nombre = possibleName || '';
-                direccion = possibleAddress || '';
-
-                if (!nombre && lines.length > 0) {
-                    nombre = lines[0];
-                }
-
-                if (nombre && (nombre.replace(/[\s\-.]/g, '').match(/\d/g) || []).length > 6) {
-                    if (!direccion) direccion = nombre;
-                    nombre = '';
                 }
 
                 return { nombre, celular, celularRef, correo, direccion };
             }
 
-            // ---- Formatear salida unificada ----
             function formatMerged(data) {
                 let output = '';
                 if (data.nombre) output += `👤 NOMBRE DEL CLIENTE: ${data.nombre}\n`;
@@ -629,11 +744,9 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
                 return output.trim();
             }
 
-            // ---- Unificar todos los datos ----
             function mergeAllData() {
                 const textData = organizeClientInfo(textInput.value);
 
-                // Combinar: lo extraído de imágenes tiene prioridad para CURP y número
                 const merged = {
                     numero: extractedData.numero || '',
                     curp: extractedData.curp || '',
@@ -644,7 +757,6 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
                     direccion: textData.direccion || extractedData.direccion || ''
                 };
 
-                // Actualizar displays
                 displayNumero.textContent = merged.numero || '—';
                 displayCURP.textContent = merged.curp || '—';
                 displayNombre.textContent = merged.nombre || '—';
@@ -663,116 +775,159 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
                 return merged;
             }
 
-            // ---- OCR para anverso (CURP) ----
-            async function performOCRFront() {
-                const file = imageFront.files[0];
+            // ---- Procesar imagen (OCR) ----
+            async function processImage(file, type) {
+                const isFront = type === 'front';
+                const statusEl = isFront ? ocrFrontStatus : ocrBackStatus;
+                const btnEl = isFront ? ocrFrontBtn : ocrBackBtn;
+                const previewEl = isFront ? previewFront : previewBack;
+
                 if (!file) {
-                    ocrFrontStatus.textContent = '⚠️ Selecciona una imagen.';
+                    statusEl.textContent = '⚠️ No hay imagen.';
                     return;
                 }
 
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    previewFront.src = e.target.result;
-                    previewFront.style.display = 'block';
+                    previewEl.src = e.target.result;
+                    previewEl.style.display = 'block';
                 };
                 reader.readAsDataURL(file);
 
-                ocrFrontStatus.textContent = '⏳ Procesando...';
-                ocrFrontBtn.disabled = true;
+                statusEl.textContent = '⏳ Procesando...';
+                btnEl.disabled = true;
 
                 try {
                     const imageUrl = URL.createObjectURL(file);
                     const result = await Tesseract.recognize(imageUrl, 'spa', {
                         logger: (m) => {
                             if (m.status === 'recognizing text') {
-                                ocrFrontStatus.textContent = `📖 Leyendo... ${Math.round(m.progress * 100)}%`;
+                                statusEl.textContent = `📖 Leyendo... ${Math.round(m.progress * 100)}%`;
                             }
                         }
                     });
                     URL.revokeObjectURL(imageUrl);
 
                     const ocrText = result.data.text;
-                    ocrFrontStatus.textContent = '✅ Anverso procesado.';
+                    statusEl.textContent = '✅ Imagen procesada.';
 
                     const extracted = extractINEData(ocrText);
-                    if (extracted.curp) {
-                        extractedData.curp = extracted.curp;
-                        curpExtracted.style.display = 'inline-block';
-                    }
-                    if (extracted.numero) {
-                        extractedData.numero = extracted.numero;
-                        numExtracted.style.display = 'inline-block';
+
+                    if (isFront) {
+                        if (extracted.curp && isValidCURP(extracted.curp)) {
+                            extractedData.curp = extracted.curp;
+                            curpExtracted.style.display = 'inline-block';
+                            manualCURP.value = extracted.curp;
+                            statusEl.textContent = '✅ CURP detectada: ' + extracted.curp;
+                        } else {
+                            statusEl.textContent = '⚠️ No se detectó CURP. Ingresa manualmente.';
+                            const preview = ocrText.replace(/\n/g, ' ').substring(0, 150);
+                            if (preview) statusEl.textContent += ` (Texto: ${preview}...)`;
+                        }
+                    } else {
+                        if (extracted.numero && isValidNumero(extracted.numero)) {
+                            extractedData.numero = extracted.numero;
+                            numExtracted.style.display = 'inline-block';
+                            manualNumero.value = extracted.numero;
+                            statusEl.textContent = '✅ Número detectado: ' + extracted.numero;
+                        } else {
+                            statusEl.textContent = '⚠️ No se detectó el número. Ingresa manualmente.';
+                            const preview = ocrText.replace(/\n/g, ' ').substring(0, 150);
+                            if (preview) statusEl.textContent += ` (Texto: ${preview}...)`;
+                        }
                     }
 
-                    // Actualizar displays
                     mergeAllData();
-
-                    console.log('OCR Anverso:', ocrText);
+                    console.log('OCR:', ocrText);
                 } catch (error) {
-                    ocrFrontStatus.textContent = '❌ Error: ' + error.message;
+                    statusEl.textContent = '❌ Error: ' + error.message;
                     console.error(error);
                 } finally {
-                    ocrFrontBtn.disabled = false;
+                    btnEl.disabled = false;
                 }
             }
 
-            // ---- OCR para reverso (número) ----
-            async function performOCRBack() {
-                const file = imageBack.files[0];
-                if (!file) {
-                    ocrBackStatus.textContent = '⚠️ Selecciona una imagen.';
-                    return;
-                }
+            // ---- Pegar desde portapapeles ----
+            function setupPasteListener(element, type) {
+                element.addEventListener('paste', function(e) {
+                    const items = e.clipboardData && e.clipboardData.items;
+                    if (!items) return;
 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewBack.src = e.target.result;
-                    previewBack.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-
-                ocrBackStatus.textContent = '⏳ Procesando...';
-                ocrBackBtn.disabled = true;
-
-                try {
-                    const imageUrl = URL.createObjectURL(file);
-                    const result = await Tesseract.recognize(imageUrl, 'spa', {
-                        logger: (m) => {
-                            if (m.status === 'recognizing text') {
-                                ocrBackStatus.textContent = `📖 Leyendo... ${Math.round(m.progress * 100)}%`;
-                            }
+                    for (let item of items) {
+                        if (item.type.startsWith('image/')) {
+                            e.preventDefault();
+                            const file = item.getAsFile();
+                            const input = type === 'front' ? imageFront : imageBack;
+                            const dt = new DataTransfer();
+                            dt.items.add(file);
+                            input.files = dt.files;
+                            input.dispatchEvent(new Event('change'));
+                            processImage(file, type);
+                            break;
                         }
-                    });
-                    URL.revokeObjectURL(imageUrl);
-
-                    const ocrText = result.data.text;
-                    ocrBackStatus.textContent = '✅ Reverso procesado.';
-
-                    const extracted = extractINEData(ocrText);
-                    if (extracted.numero) {
-                        extractedData.numero = extracted.numero;
-                        numExtracted.style.display = 'inline-block';
                     }
-                    if (extracted.curp) {
-                        extractedData.curp = extracted.curp;
-                        curpExtracted.style.display = 'inline-block';
-                    }
+                });
+            }
 
+            // ---- Drag and Drop ----
+            function setupDragDrop(dropZone, input, preview, type) {
+                dropZone.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('dragover');
+                });
+
+                dropZone.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('dragover');
+                });
+
+                dropZone.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0 && files[0].type.startsWith('image/')) {
+                        const file = files[0];
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        input.files = dt;
+                        input.dispatchEvent(new Event('change'));
+                        processImage(file, type);
+                    }
+                });
+
+                dropZone.addEventListener('click', function() {
+                    input.click();
+                });
+            }
+
+            // ---- Establecer CURP manual ----
+            function setManualCURP() {
+                const val = manualCURP.value.trim().toUpperCase();
+                if (isValidCURP(val)) {
+                    extractedData.curp = val;
+                    curpExtracted.style.display = 'inline-block';
                     mergeAllData();
+                    ocrFrontStatus.textContent = '✅ CURP ingresada manualmente: ' + val;
+                } else {
+                    alert('Formato de CURP inválido. Debe tener 4 letras, 6 dígitos y 5 caracteres alfanuméricos.');
+                }
+            }
 
-                    console.log('OCR Reverso:', ocrText);
-                } catch (error) {
-                    ocrBackStatus.textContent = '❌ Error: ' + error.message;
-                    console.error(error);
-                } finally {
-                    ocrBackBtn.disabled = false;
+            // ---- Establecer número manual ----
+            function setManualNumero() {
+                const val = manualNumero.value.trim().replace(/\s/g, '');
+                if (isValidNumero(val)) {
+                    extractedData.numero = val;
+                    numExtracted.style.display = 'inline-block';
+                    mergeAllData();
+                    ocrBackStatus.textContent = '✅ Número ingresado manualmente: ' + val;
+                } else {
+                    alert('Número inválido. Debe tener exactamente 13 dígitos.');
                 }
             }
 
             // ---- Limpiar todo ----
             function clearAll() {
-                // Limpiar imágenes
                 imageFront.value = '';
                 imageBack.value = '';
                 previewFront.style.display = 'none';
@@ -781,8 +936,9 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
                 ocrBackStatus.textContent = '⏳ Esperando imagen';
                 curpExtracted.style.display = 'none';
                 numExtracted.style.display = 'none';
+                manualCURP.value = '';
+                manualNumero.value = '';
 
-                // Limpiar datos extraídos
                 extractedData = {
                     numero: '',
                     curp: '',
@@ -793,10 +949,8 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
                     direccion: ''
                 };
 
-                // Limpiar texto
                 textInput.value = '';
 
-                // Limpiar displays
                 displayNumero.textContent = '—';
                 displayCURP.textContent = '—';
                 displayNombre.textContent = '—';
@@ -822,8 +976,16 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
 
             // ========== EVENT LISTENERS ==========
 
-            // OCR Anverso
-            ocrFrontBtn.addEventListener('click', performOCRFront);
+            // OCR Front
+            ocrFrontBtn.addEventListener('click', function() {
+                const file = imageFront.files[0];
+                if (!file) {
+                    ocrFrontStatus.textContent = '⚠️ Selecciona o pega una imagen primero.';
+                    return;
+                }
+                processImage(file, 'front');
+            });
+
             imageFront.addEventListener('change', function() {
                 if (this.files && this.files[0]) {
                     const file = this.files[0];
@@ -833,12 +995,20 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
                         previewFront.style.display = 'block';
                     };
                     reader.readAsDataURL(file);
-                    ocrFrontStatus.textContent = '🖼️ Imagen lista. Presiona "OCR Anverso".';
+                    ocrFrontStatus.textContent = '🖼️ Imagen lista. Presiona "Leer CURP".';
                 }
             });
 
-            // OCR Reverso
-            ocrBackBtn.addEventListener('click', performOCRBack);
+            // OCR Back
+            ocrBackBtn.addEventListener('click', function() {
+                const file = imageBack.files[0];
+                if (!file) {
+                    ocrBackStatus.textContent = '⚠️ Selecciona o pega una imagen primero.';
+                    return;
+                }
+                processImage(file, 'back');
+            });
+
             imageBack.addEventListener('change', function() {
                 if (this.files && this.files[0]) {
                     const file = this.files[0];
@@ -848,20 +1018,34 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
                         previewBack.style.display = 'block';
                     };
                     reader.readAsDataURL(file);
-                    ocrBackStatus.textContent = '🖼️ Imagen lista. Presiona "OCR Reverso".';
+                    ocrBackStatus.textContent = '🖼️ Imagen lista. Presiona "Leer número".';
                 }
+            });
+
+            // Drag & Drop
+            setupDragDrop(dropZoneFront, imageFront, previewFront, 'front');
+            setupDragDrop(dropZoneBack, imageBack, previewBack, 'back');
+
+            // Paste desde portapapeles
+            setupPasteListener(dropZoneFront, 'front');
+            setupPasteListener(dropZoneBack, 'back');
+
+            // Manuales
+            setCURPBtn.addEventListener('click', setManualCURP);
+            manualCURP.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') setManualCURP();
+            });
+            setNumeroBtn.addEventListener('click', setManualNumero);
+            manualNumero.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') setManualNumero();
             });
 
             // Unificar
             mergeBtn.addEventListener('click', mergeAllData);
-
-            // Limpiar todo
             clearAllBtn.addEventListener('click', clearAll);
-
-            // Copiar
             copyMergedBtn.addEventListener('click', copyMerged);
 
-            // Inicializar con datos de ejemplo
+            // Inicializar
             setTimeout(() => {
                 mergeAllData();
             }, 150);
