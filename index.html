@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Organizador de datos · Extractor INE</title>
+    <!-- Tesseract.js para OCR -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js">
     </script>
     <style>
@@ -279,11 +280,34 @@
             margin: 1.8rem 0 0.5rem;
             border-top: 3px dashed #dce3ef;
         }
+        .github-badge {
+            display: inline-block;
+            background: #24292e;
+            color: white;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-decoration: none;
+            margin-left: 0.5rem;
+        }
+        .github-badge:hover {
+            background: #3a4149;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📋 <span>Organizador de datos</span></h1>
+        <div class="header-actions">
+            <h1>📋 <span>Organizador de datos</span></h1>
+            <a href="https://github.com" target="_blank" class="github-badge">🔗 GitHub</a>
+        </div>
         <div class="subhead">
             Sección 1: Extrae CURP y número de 13 dígitos de imágenes INE · Sección 2: Organiza información del cliente
         </div>
@@ -352,6 +376,8 @@ Rio de plata 692, entre Monte y Rio de Elba, Lomas del Pedregal, Puerto Vallarta
         <hr>
         <div class="footer-note">
             ⚡ Sección 1: OCR con Tesseract.js · Sección 2: Extrae nombre, teléfonos, correo y dirección formateada.
+            <br>
+            <span style="font-size: 0.8rem; color: #8a9bb0;">📁 Compatible con GitHub Pages · Todos los derechos reservados</span>
         </div>
     </div>
 
