@@ -429,7 +429,7 @@
             color: #4a5a72;
             border: 1px solid #e2eaf6;
             margin-top: 0.3rem;
-            max-height: 60px;
+            max-height: 80px;
             overflow-y: auto;
             word-break: break-all;
             font-family: monospace;
@@ -629,44 +629,74 @@
                 let numero = '';
                 let curp = '';
 
-                // 1. Buscar CURP - Múltiples patrones
+                // 1. BUSCAR CURP - ESTRATEGIA MEJORADA
+                // Primero: buscar "CURP" y tomar TODO lo que viene después hasta el siguiente espacio o salto de línea
                 const curpPatterns = [
-                    // Patrón estándar: 4 letras + 6 dígitos + 5 alfanuméricos
-                    /\b([A-Z]{4}\d{6}[A-Z0-9]{5})\b/gi,
-                    // CURP precedida por "CURP" o "CURP:"
-                    /CURP\s*:?\s*([A-Z]{4}\d{6}[A-Z0-9]{5})/gi,
-                    // CURP en línea separada
+                    // Patrón: CURP seguido de cualquier texto (letras/números) hasta espacio o salto
+                    /CURP\s*:?\s*([A-Z0-9]+)/gi,
+                    // CURP con espacios entre caracteres (ej: H E O G 9 3 0 2 1 5 M J C K R R O 7)
+                    /CURP\s*:?\s*([A-Z0-9]\s+[A-Z0-9]\s+[A-Z0-9]\s+[A-Z0-9]\s+[A-Z0-9]\s+[A-Z0-9]\s+[A-Z0-9]\s+[A-Z0-9]\s+[A-Z0-9]\s+[A-Z0-9]\s+[A-Z0-9]\s+[A-Z0-9]\s+[A-Z0-9]\s+[A-Z0-9]\s+[A-Z0-9]\s+[A-Z0-9]\s+[A-Z0-9]\s+[A-Z0-9])/gi,
+                    // CURP en línea separada (solo la CURP)
                     /^([A-Z]{4}\d{6}[A-Z0-9]{5})$/gm,
-                    // CURP con espacios entre letras (ej: H E O G 9 3 0 2 1 5 M J C K R R O 7)
-                    /([A-Z])\s*([A-Z])\s*([A-Z])\s*([A-Z])\s*(\d)\s*(\d)\s*(\d)\s*(\d)\s*(\d)\s*(\d)\s*([A-Z0-9])\s*([A-Z0-9])\s*([A-Z0-9])\s*([A-Z0-9])\s*([A-Z0-9])/g
+                    // CURP con separadores (guiones, puntos, etc)
+                    /\b([A-Z]{4}[-\s.]?\d{6}[-\s.]?[A-Z0-9]{5})\b/gi,
+                    // Patrón estándar: 4 letras + 6 dígitos + 5 alfanuméricos
+                    /\b([A-Z]{4}\d{6}[A-Z0-9]{5})\b/gi
                 ];
 
+                let foundCurp = false;
                 for (let pattern of curpPatterns) {
-                    const match = cleanText.match(pattern);
-                    if (match) {
-                        let candidate = match[0] || match[1] || '';
+                    let match;
+                    // Para patrones con flag 'g', necesitamos iterar
+                    const regex = new RegExp(pattern.source, pattern.flags);
+                    let allMatches = [];
+                    let tempMatch;
+                    while ((tempMatch = regex.exec(cleanText)) !== null) {
+                        allMatches.push(tempMatch);
+                    }
+
+                    for (let m of allMatches) {
+                        let candidate = m[1] || m[0] || '';
                         // Si es el patrón con espacios, reconstruir
-                        if (candidate.length < 18 && candidate.match(/^[A-Z\d\s]+$/)) {
-                            // Reconstruir CURP desde partes
-                            const parts = candidate.match(/[A-Z\d]/g);
-                            if (parts && parts.length === 18) {
-                                candidate = parts.join('');
-                            }
+                        if (candidate.includes(' ')) {
+                            candidate = candidate.replace(/\s/g, '');
                         }
-                        candidate = candidate.replace(/\s/g, '').toUpperCase();
-                        if (isValidCURP(candidate)) {
+                        // Limpiar caracteres no deseados
+                        candidate = candidate.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+
+                        // Validar longitud: debe tener 18 caracteres (4 letras + 6 dígitos + 5 alfanuméricos)
+                        if (candidate.length === 18 && isValidCURP(candidate)) {
                             curp = candidate;
+                            foundCurp = true;
                             break;
                         }
+                        // Si tiene más de 18 caracteres, intentar extraer la CURP de ahí
+                        if (candidate.length > 18) {
+                            // Buscar subcadena que coincida con el patrón CURP
+                            const subMatch = candidate.match(/([A-Z]{4}\d{6}[A-Z0-9]{5})/);
+                            if (subMatch && isValidCURP(subMatch[1])) {
+                                curp = subMatch[1];
+                                foundCurp = true;
+                                break;
+                            }
+                        }
                     }
+                    if (foundCurp) break;
                 }
 
-                // Si no se encontró CURP, buscar cualquier cadena que parezca CURP
+                // Si no se encontró CURP, buscar cualquier cadena larga que parezca CURP
                 if (!curp) {
-                    const possibleCurps = cleanText.match(/\b[A-Z]{3,5}\d{5,7}[A-Z0-9]{3,6}\b/g);
+                    // Buscar cualquier combinación de 18 caracteres alfanuméricos
+                    const possibleCurps = cleanText.match(/\b[A-Z0-9]{16,20}\b/g);
                     if (possibleCurps) {
                         for (let c of possibleCurps) {
                             const cleaned = c.replace(/\s/g, '').toUpperCase();
+                            // Intentar extraer la CURP de la cadena
+                            const subMatch = cleaned.match(/([A-Z]{4}\d{6}[A-Z0-9]{5})/);
+                            if (subMatch && isValidCURP(subMatch[1])) {
+                                curp = subMatch[1];
+                                break;
+                            }
                             if (isValidCURP(cleaned)) {
                                 curp = cleaned;
                                 break;
@@ -675,14 +705,29 @@
                     }
                 }
 
+                // Si aún no hay CURP, buscar después de "CURP" con cualquier caracter
+                if (!curp) {
+                    const curpIndex = cleanText.toUpperCase().indexOf('CURP');
+                    if (curpIndex !== -1) {
+                        const afterCurp = cleanText.substring(curpIndex + 4);
+                        // Tomar los primeros 30 caracteres después de "CURP"
+                        const textAfter = afterCurp.substring(0, 30).replace(/[^A-Z0-9]/gi, '');
+                        if (textAfter.length >= 16) {
+                            // Buscar la CURP en ese texto
+                            const subMatch = textAfter.match(/([A-Z]{4}\d{6}[A-Z0-9]{5})/);
+                            if (subMatch && isValidCURP(subMatch[1])) {
+                                curp = subMatch[1];
+                            }
+                        }
+                    }
+                }
+
                 // 2. Buscar número de 13 dígitos
-                // Patrón: << seguido de 13 dígitos
                 const numRegex = /<<\s*(\d{13})/;
                 const numMatch = cleanText.match(numRegex);
                 if (numMatch) {
                     numero = numMatch[1];
                 } else {
-                    // Buscar 13 dígitos consecutivos
                     const fallbackNum = cleanText.match(/\b(\d{13})\b/);
                     if (fallbackNum) numero = fallbackNum[1];
                 }
@@ -864,7 +909,6 @@
                 btnEl.disabled = true;
 
                 try {
-                    // Configurar Tesseract con mejores parámetros para texto pequeño
                     const imageUrl = URL.createObjectURL(file);
                     const result = await Tesseract.recognize(
                         imageUrl,
@@ -894,18 +938,32 @@
                             statusEl.textContent = '✅ CURP detectada: ' + extracted.curp;
                             debugEl.textContent += `\n✅ CURP encontrada: ${extracted.curp}`;
                         } else {
-                            // Buscar CURP en el texto de manera más agresiva
-                            const possibleCurps = ocrText.match(/[A-Z]{3,5}\d{5,7}[A-Z0-9]{3,6}/gi);
+                            // Intentar extraer CURP manualmente del texto OCR
+                            const lines = ocrText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
                             let found = false;
-                            if (possibleCurps) {
-                                for (let c of possibleCurps) {
-                                    const cleaned = c.replace(/\s/g, '').toUpperCase();
-                                    if (isValidCURP(cleaned)) {
+                            for (let line of lines) {
+                                // Buscar "CURP" en la línea
+                                if (line.toUpperCase().includes('CURP')) {
+                                    const afterCurp = line.substring(line.toUpperCase().indexOf('CURP') + 4);
+                                    const cleaned = afterCurp.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+                                    // Intentar extraer CURP de la cadena
+                                    const subMatch = cleaned.match(/([A-Z]{4}\d{6}[A-Z0-9]{5})/);
+                                    if (subMatch && isValidCURP(subMatch[1])) {
+                                        extractedData.curp = subMatch[1];
+                                        curpExtracted.style.display = 'inline-block';
+                                        manualCURP.value = subMatch[1];
+                                        statusEl.textContent = '✅ CURP detectada: ' + subMatch[1];
+                                        debugEl.textContent += `\n✅ CURP encontrada (línea): ${subMatch[1]}`;
+                                        found = true;
+                                        break;
+                                    }
+                                    // Si la cadena tiene 18 caracteres, validar directamente
+                                    if (cleaned.length === 18 && isValidCURP(cleaned)) {
                                         extractedData.curp = cleaned;
                                         curpExtracted.style.display = 'inline-block';
                                         manualCURP.value = cleaned;
                                         statusEl.textContent = '✅ CURP detectada: ' + cleaned;
-                                        debugEl.textContent += `\n✅ CURP encontrada (alternativa): ${cleaned}`;
+                                        debugEl.textContent += `\n✅ CURP encontrada: ${cleaned}`;
                                         found = true;
                                         break;
                                     }
@@ -924,7 +982,6 @@
                             statusEl.textContent = '✅ Número detectado: ' + extracted.numero;
                             debugEl.textContent += `\n✅ Número encontrado: ${extracted.numero}`;
                         } else {
-                            // Buscar 13 dígitos en el texto
                             const possibleNums = ocrText.match(/\b\d{13}\b/g);
                             if (possibleNums && possibleNums.length > 0) {
                                 const num = possibleNums[0];
@@ -1158,7 +1215,6 @@
             // Inicializar
             setTimeout(() => {
                 mergeAllData();
-                // Pre-cargar ejemplo de CURP en el campo manual
                 manualCURP.placeholder = 'Ej: HEOG930215MJCKRRO7';
             }, 150);
         })();
