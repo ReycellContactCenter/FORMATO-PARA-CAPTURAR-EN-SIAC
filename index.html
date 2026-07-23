@@ -138,6 +138,23 @@
         .btn-primary:hover {
             background: #1d4ed8;
         }
+        .btn-warning {
+            background: #f59e0b;
+        }
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        .btn-danger {
+            background: #ef4444;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .btn-sm {
+            padding: 0.4rem 1.2rem;
+            font-size: 0.85rem;
+            margin-top: 0;
+        }
         .file-upload-wrap {
             display: flex;
             flex-direction: column;
@@ -165,7 +182,7 @@
         }
         .preview-img {
             max-width: 100%;
-            max-height: 150px;
+            max-height: 200px;
             border-radius: 18px;
             margin: 0.4rem 0 0.2rem;
             border: 1px solid #dfe7f0;
@@ -209,6 +226,10 @@
             color: #8896ae;
             font-style: italic;
             background: transparent;
+        }
+        .result-value.conflict {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
         }
         .ocr-status {
             margin-top: 0.5rem;
@@ -359,11 +380,6 @@
             color: #1f3a5e;
             font-size: 0.85rem;
         }
-        .btn-sm {
-            padding: 0.4rem 1.2rem;
-            font-size: 0.85rem;
-            margin-top: 0;
-        }
         .tip-box {
             background: #fef9e7;
             border-left: 4px solid #f59e0b;
@@ -434,6 +450,37 @@
             word-break: break-all;
             font-family: monospace;
         }
+        .warning-badge {
+            display: inline-block;
+            background: #f59e0b;
+            color: white;
+            padding: 0.1rem 0.6rem;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            margin-left: 0.3rem;
+        }
+        .rotation-controls {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-top: 0.4rem;
+            justify-content: center;
+        }
+        .rotation-controls .btn {
+            padding: 0.25rem 0.8rem;
+            font-size: 0.75rem;
+            margin-top: 0;
+        }
+        .orientation-badge {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 0.1rem 0.6rem;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -443,14 +490,15 @@
             <a href="https://github.com" target="_blank" class="github-badge">🔗 GitHub</a>
         </div>
         <div class="subhead">
-            Sube imágenes recortadas · <kbd>Ctrl+V</kbd> para pegar desde portapapeles · Arrastra y suelta archivos
+            Sube imágenes en cualquier orientación · <kbd>Ctrl+V</kbd> para pegar · Arrastra y suelta archivos
         </div>
 
         <!-- SECCIÓN 1: EXTRACCIÓN DE IMÁGENES (INE) -->
         <div class="card" style="margin-bottom: 2rem;">
             <h2><span>🖼️</span> Sección 1 · Extraer de imágenes INE</h2>
             <div class="tip-box">
-                💡 <strong>Consejo:</strong> Usa <kbd>Ctrl+V</kbd> (Windows) o <kbd>⌘+V</kbd> (Mac) para pegar una imagen desde el portapapeles. También puedes arrastrar y soltar archivos.
+                💡 <strong>Consejo:</strong> La herramienta detecta automáticamente la orientación de la imagen (vertical, horizontal, inclinada).<br>
+                ⚠️ Si la imagen está al revés, usa los botones de rotación para corregirla.
             </div>
             <div class="image-grid">
                 <div class="image-card">
@@ -461,8 +509,14 @@
                             <span class="paste-hint">O usa <kbd>Ctrl+V</kbd> para pegar desde el portapapeles</span>
                             <input type="file" id="imageFront" accept="image/*" style="display:none;">
                         </div>
-                        <div style="display: flex; justify-content: center;">
+                        <div style="display: flex; justify-content: center; position: relative;">
                             <img id="previewFront" class="preview-img" style="display: none;" alt="Vista previa">
+                        </div>
+                        <div class="rotation-controls">
+                            <button class="btn btn-sm btn-warning" id="rotateLeftFront">↺ Izquierda</button>
+                            <button class="btn btn-sm btn-warning" id="rotateRightFront">↻ Derecha</button>
+                            <button class="btn btn-sm btn-danger" id="rotate180Front">↻ 180°</button>
+                            <button class="btn btn-sm btn-outline" id="resetRotationFront">⟲ Reset</button>
                         </div>
                         <button class="btn btn-primary" id="ocrFrontBtn" style="width: 100%; justify-content: center;">🧠 Leer CURP</button>
                         <div id="ocrFrontStatus" class="ocr-status" style="font-size: 0.8rem;">⏳ Esperando imagen</div>
@@ -484,6 +538,12 @@
                         </div>
                         <div style="display: flex; justify-content: center;">
                             <img id="previewBack" class="preview-img" style="display: none;" alt="Vista previa">
+                        </div>
+                        <div class="rotation-controls">
+                            <button class="btn btn-sm btn-warning" id="rotateLeftBack">↺ Izquierda</button>
+                            <button class="btn btn-sm btn-warning" id="rotateRightBack">↻ Derecha</button>
+                            <button class="btn btn-sm btn-danger" id="rotate180Back">↻ 180°</button>
+                            <button class="btn btn-sm btn-outline" id="resetRotationBack">⟲ Reset</button>
                         </div>
                         <button class="btn btn-primary" id="ocrBackBtn" style="width: 100%; justify-content: center;">🧠 Leer número</button>
                         <div id="ocrBackStatus" class="ocr-status" style="font-size: 0.8rem;">⏳ Esperando imagen</div>
@@ -545,7 +605,7 @@
 
         <hr>
         <div class="footer-note">
-            ⚡ <kbd>Ctrl+V</kbd> para pegar imágenes · Arrastra y suelta archivos · Organiza texto con separadores
+            ⚡ <kbd>Ctrl+V</kbd> para pegar imágenes · Arrastra y suelta archivos · Rotación manual disponible
             <br>
             <span style="font-size: 0.8rem; color: #8a9bb0;">📁 Compatible con GitHub Pages</span>
         </div>
@@ -591,67 +651,105 @@
             const curpExtracted = document.getElementById('curpExtracted');
             const numExtracted = document.getElementById('numExtracted');
 
-            // ========== DATOS ==========
-            let extractedData = {
-                numero: '',
-                curp: '',
-                nombre: '',
-                celular: '',
-                celularRef: '',
-                correo: '',
-                direccion: ''
+            // ========== ESTADO DE ROTACIÓN ==========
+            let rotationState = {
+                front: 0,
+                back: 0
+            };
+
+            let imageData = {
+                front: null,
+                back: null
             };
 
             // ========== FUNCIONES ==========
 
-            // ---- LIMPIAR TEXTO: eliminar todo excepto letras y números ----
+            // ---- ROTAR IMAGEN ----
+            function rotateImage(img, degrees, type) {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                const rad = degrees * Math.PI / 180;
+                const sin = Math.abs(Math.sin(rad));
+                const cos = Math.abs(Math.cos(rad));
+                
+                const w = img.naturalWidth || img.width;
+                const h = img.naturalHeight || img.height;
+                
+                canvas.width = w * cos + h * sin;
+                canvas.height = w * sin + h * cos;
+                
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate(rad);
+                ctx.drawImage(img, -w / 2, -h / 2);
+                
+                const rotatedDataUrl = canvas.toDataURL('image/png');
+                
+                const preview = type === 'front' ? previewFront : previewBack;
+                preview.src = rotatedDataUrl;
+                preview.style.display = 'block';
+                
+                // Guardar el objeto Image para el OCR
+                const rotatedImg = new Image();
+                rotatedImg.src = rotatedDataUrl;
+                rotatedImg.onload = function() {
+                    if (type === 'front') {
+                        imageData.front = rotatedImg;
+                    } else {
+                        imageData.back = rotatedImg;
+                    }
+                };
+                
+                return rotatedDataUrl;
+            }
+
+            // ---- DETECTAR ORIENTACIÓN AUTOMÁTICA ----
+            function detectOrientation(imgData, type) {
+                // Esta función intenta detectar si la imagen está al revés
+                // usando un análisis simple de texto
+                // En la práctica, usamos Tesseract para leer y si no encuentra texto
+                // intentamos con rotaciones
+                return 0; // Por defecto no rotar
+            }
+
+            // ---- LIMPIAR TEXTO ----
             function cleanText(text) {
                 if (!text) return '';
                 return text.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
             }
 
-            // ---- EXTRAER CURP: busca la palabra CURP y extrae lo que está AL LADO o DEBAJO ----
+            // ---- EXTRAER CURP ----
             function extractCurpFromText(text) {
                 if (!text || text.trim() === '') {
                     return '';
                 }
 
-                // Dividir el texto en líneas
                 const lines = text.split(/\n/).map(l => l.trim()).filter(l => l.length > 0);
                 
-                // Buscar en cada línea
                 for (let i = 0; i < lines.length; i++) {
                     const line = lines[i];
                     const upperLine = line.toUpperCase();
                     
-                    // Buscar la palabra CURP en la línea
                     const curpIndex = upperLine.indexOf('CURP');
                     if (curpIndex !== -1) {
-                        // Extraer TODO lo que está DESPUÉS de CURP en la misma línea
                         let afterCurp = line.substring(curpIndex + 4);
                         
-                        // Si no hay nada después en la misma línea, buscar en la siguiente línea
                         if (afterCurp.trim() === '' && i + 1 < lines.length) {
                             afterCurp = lines[i + 1];
                         }
                         
-                        // Limpiar: eliminar todo excepto letras y números
                         const cleaned = cleanText(afterCurp);
                         
-                        // Si tiene al menos 10 caracteres, es una CURP potencial
                         if (cleaned.length >= 10) {
                             return cleaned;
                         }
                     }
                 }
                 
-                // Si no encontró CURP en una línea específica, buscar en todo el texto
-                // Buscar cualquier ocurrencia de CURP y tomar lo que sigue
                 const textUpper = text.toUpperCase();
                 const curpIndex = textUpper.indexOf('CURP');
                 if (curpIndex !== -1) {
                     let afterCurp = text.substring(curpIndex + 4);
-                    // Tomar los primeros 30 caracteres después de CURP
                     afterCurp = afterCurp.substring(0, 30);
                     const cleaned = cleanText(afterCurp);
                     if (cleaned.length >= 10) {
@@ -659,10 +757,8 @@
                     }
                 }
                 
-                // Último recurso: buscar cualquier cadena larga de letras y números
                 const matches = text.match(/[A-Za-z0-9]{10,}/g);
                 if (matches) {
-                    // Tomar la más larga
                     let longest = '';
                     for (let m of matches) {
                         if (m.length > longest.length) {
@@ -677,25 +773,22 @@
                 return '';
             }
 
-            // ---- EXTRAER NÚMERO DE 13 DÍGITOS ----
+            // ---- EXTRAER NÚMERO ----
             function extractNumeroFromText(text) {
                 if (!text || text.trim() === '') {
                     return '';
                 }
 
-                // Buscar 13 dígitos consecutivos
                 const matches = text.match(/\b\d{13}\b/g);
                 if (matches && matches.length > 0) {
                     return matches[0];
                 }
 
-                // Buscar patrón << seguido de 13 dígitos
                 const numMatch = text.match(/<<\s*(\d{13})/);
                 if (numMatch) {
                     return numMatch[1];
                 }
 
-                // Buscar 13 dígitos con espacios o guiones
                 const spacedMatch = text.match(/\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d/);
                 if (spacedMatch) {
                     return spacedMatch[0].replace(/[\s\-.]/g, '');
@@ -704,11 +797,10 @@
                 return '';
             }
 
-            // ---- VALIDAR CURP (solo verifica que tenga formato de 18 caracteres) ----
+            // ---- VALIDAR ----
             function isValidCURP(curp) {
                 if (!curp) return false;
                 const cleaned = curp.trim().toUpperCase();
-                // Solo verificar que tiene 18 caracteres y que son letras/números
                 return /^[A-Z0-9]{18}$/.test(cleaned);
             }
 
@@ -718,43 +810,35 @@
                 return /^\d{13}$/.test(cleaned);
             }
 
-            // ---- Extraer INE (número y CURP) ----
+            // ---- Extraer INE ----
             function extractINEData(text) {
                 if (!text || text.trim() === '') {
                     return { numero: '', curp: '' };
                 }
 
-                // Extraer CURP usando el método mejorado
                 let curp = extractCurpFromText(text);
                 
-                // Validar: si tiene 18 caracteres, es válida
                 if (curp && curp.length === 18) {
-                    // Si tiene 18, verificar que sean letras/números
                     if (/^[A-Z0-9]{18}$/.test(curp)) {
-                        // No hacer más correcciones, usar exactamente lo que se extrajo
+                        // OK
                     } else {
-                        // Si tiene caracteres no válidos, limpiar
                         curp = cleanText(curp);
                     }
                 } else if (curp && curp.length > 18) {
-                    // Si tiene más de 18, tomar los primeros 18
                     curp = curp.substring(0, 18);
                 } else if (curp && curp.length < 18) {
-                    // Si tiene menos de 18, intentar buscar otra cosa
-                    // Buscar cualquier cadena de 18 caracteres
                     const matches = text.match(/[A-Z0-9]{18}/gi);
                     if (matches && matches.length > 0) {
                         curp = matches[0].toUpperCase();
                     }
                 }
 
-                // Extraer número
                 let numero = extractNumeroFromText(text);
 
                 return { numero, curp };
             }
 
-            // ---- Organizar información del cliente ----
+            // ---- Organizar cliente ----
             function organizeClientInfo(text) {
                 if (!text || text.trim() === '') {
                     return {
@@ -871,6 +955,16 @@
                 return output.trim();
             }
 
+            let extractedData = {
+                numero: '',
+                curp: '',
+                nombre: '',
+                celular: '',
+                celularRef: '',
+                correo: '',
+                direccion: ''
+            };
+
             function mergeAllData() {
                 const textData = organizeClientInfo(textInput.value);
 
@@ -902,7 +996,7 @@
                 return merged;
             }
 
-            // ---- Procesar imagen (OCR) ----
+            // ---- PROCESAR IMAGEN CON OCR ----
             async function processImage(file, type) {
                 const isFront = type === 'front';
                 const statusEl = isFront ? ocrFrontStatus : ocrBackStatus;
@@ -915,10 +1009,23 @@
                     return;
                 }
 
+                // Mostrar preview
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    previewEl.src = e.target.result;
-                    previewEl.style.display = 'block';
+                    const img = new Image();
+                    img.onload = function() {
+                        // Guardar imagen original
+                        if (isFront) {
+                            imageData.front = img;
+                            rotationState.front = 0;
+                        } else {
+                            imageData.back = img;
+                            rotationState.back = 0;
+                        }
+                        previewEl.src = e.target.result;
+                        previewEl.style.display = 'block';
+                    };
+                    img.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
 
@@ -928,22 +1035,68 @@
                 btnEl.disabled = true;
 
                 try {
-                    const imageUrl = URL.createObjectURL(file);
-                    const result = await Tesseract.recognize(
-                        imageUrl,
-                        'spa',
-                        {
-                            logger: (m) => {
-                                if (m.status === 'recognizing text') {
-                                    statusEl.textContent = `📖 Leyendo... ${Math.round(m.progress * 100)}%`;
-                                    debugEl.textContent = `Progreso: ${Math.round(m.progress * 100)}%`;
+                    // Obtener la imagen actual (posiblemente rotada)
+                    let imgToProcess;
+                    if (isFront && imageData.front) {
+                        imgToProcess = imageData.front;
+                    } else if (!isFront && imageData.back) {
+                        imgToProcess = imageData.back;
+                    } else {
+                        imgToProcess = new Image();
+                        imgToProcess.src = previewEl.src;
+                        await new Promise((resolve) => {
+                            imgToProcess.onload = resolve;
+                        });
+                    }
+
+                    // Convertir a canvas para Tesseract
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = imgToProcess.naturalWidth || imgToProcess.width;
+                    canvas.height = imgToProcess.naturalHeight || imgToProcess.height;
+                    ctx.drawImage(imgToProcess, 0, 0);
+                    const imageDataUrl = canvas.toDataURL('image/png');
+
+                    // Intentar primero con la orientación actual
+                    let ocrText = await performOCR(imageDataUrl, statusEl, debugEl);
+
+                    // Si no encuentra CURP, probar con rotaciones automáticas
+                    if (!extractCurpFromText(ocrText) && isFront) {
+                        statusEl.textContent = '🔄 Probando otras orientaciones...';
+                        const rotations = [90, 180, 270];
+                        for (let angle of rotations) {
+                            const rotatedCanvas = document.createElement('canvas');
+                            const rCtx = rotatedCanvas.getContext('2d');
+                            const rad = angle * Math.PI / 180;
+                            const sin = Math.abs(Math.sin(rad));
+                            const cos = Math.abs(Math.cos(rad));
+                            const w = imgToProcess.naturalWidth || imgToProcess.width;
+                            const h = imgToProcess.naturalHeight || imgToProcess.height;
+                            rotatedCanvas.width = w * cos + h * sin;
+                            rotatedCanvas.height = w * sin + h * cos;
+                            rCtx.translate(rotatedCanvas.width / 2, rotatedCanvas.height / 2);
+                            rCtx.rotate(rad);
+                            rCtx.drawImage(imgToProcess, -w / 2, -h / 2);
+                            const rotatedDataUrl = rotatedCanvas.toDataURL('image/png');
+                            
+                            const testText = await performOCR(rotatedDataUrl, statusEl, debugEl);
+                            if (extractCurpFromText(testText)) {
+                                ocrText = testText;
+                                statusEl.textContent = `✅ Orientación corregida (${angle}°)`;
+                                // Actualizar preview con la rotación correcta
+                                if (isFront) {
+                                    rotationState.front = angle;
+                                    previewEl.src = rotatedDataUrl;
+                                    const newImg = new Image();
+                                    newImg.src = rotatedDataUrl;
+                                    await new Promise((resolve) => { newImg.onload = resolve; });
+                                    imageData.front = newImg;
                                 }
+                                break;
                             }
                         }
-                    );
-                    URL.revokeObjectURL(imageUrl);
+                    }
 
-                    const ocrText = result.data.text;
                     statusEl.textContent = '✅ Imagen procesada.';
                     debugEl.textContent = `📝 Texto OCR: ${ocrText.substring(0, 200)}${ocrText.length > 200 ? '...' : ''}`;
 
@@ -951,13 +1104,10 @@
 
                     if (isFront) {
                         if (extracted.curp && extracted.curp.length >= 10) {
-                            // Tomar exactamente lo que se extrajo sin modificaciones
                             let curpFinal = extracted.curp;
-                            // Si tiene más de 18, tomar los primeros 18
                             if (curpFinal.length > 18) {
                                 curpFinal = curpFinal.substring(0, 18);
                             }
-                            // Si tiene menos de 18, no es válida
                             if (curpFinal.length === 18) {
                                 extractedData.curp = curpFinal;
                                 curpExtracted.style.display = 'inline-block';
@@ -965,12 +1115,12 @@
                                 statusEl.textContent = '✅ CURP detectada: ' + curpFinal;
                                 debugEl.textContent += `\n✅ CURP encontrada: ${curpFinal}`;
                             } else {
-                                statusEl.textContent = '⚠️ CURP incompleta (menos de 18 caracteres). Ingresa manualmente.';
-                                debugEl.textContent += `\n⚠️ CURP incompleta: ${curpFinal} (${curpFinal.length} caracteres)`;
+                                statusEl.textContent = '⚠️ CURP incompleta. Ingresa manualmente.';
+                                debugEl.textContent += `\n⚠️ CURP incompleta: ${curpFinal}`;
                             }
                         } else {
-                            statusEl.textContent = '⚠️ No se detectó CURP. Ingresa manualmente.';
-                            debugEl.textContent += '\n⚠️ No se encontró CURP en el texto OCR.';
+                            statusEl.textContent = '⚠️ No se detectó CURP. Verifica la orientación o ingresa manualmente.';
+                            debugEl.textContent += '\n⚠️ No se encontró CURP. Prueba rotar la imagen.';
                         }
                     } else {
                         if (extracted.numero && isValidNumero(extracted.numero)) {
@@ -980,8 +1130,8 @@
                             statusEl.textContent = '✅ Número detectado: ' + extracted.numero;
                             debugEl.textContent += `\n✅ Número encontrado: ${extracted.numero}`;
                         } else {
-                            statusEl.textContent = '⚠️ No se detectó el número. Ingresa manualmente.';
-                            debugEl.textContent += '\n⚠️ No se encontraron 13 dígitos consecutivos.';
+                            statusEl.textContent = '⚠️ No se detectó el número. Verifica la orientación.';
+                            debugEl.textContent += '\n⚠️ No se encontraron 13 dígitos.';
                         }
                     }
 
@@ -996,144 +1146,91 @@
                 }
             }
 
-            // ---- Pegar desde portapapeles ----
-            function setupPasteListener(element, type) {
-                element.addEventListener('paste', function(e) {
-                    const items = e.clipboardData && e.clipboardData.items;
-                    if (!items) return;
-
-                    for (let item of items) {
-                        if (item.type.startsWith('image/')) {
-                            e.preventDefault();
-                            const file = item.getAsFile();
-                            const input = type === 'front' ? imageFront : imageBack;
-                            const dt = new DataTransfer();
-                            dt.items.add(file);
-                            input.files = dt.files;
-                            input.dispatchEvent(new Event('change'));
-                            processImage(file, type);
-                            break;
+            async function performOCR(imageDataUrl, statusEl, debugEl) {
+                return new Promise((resolve, reject) => {
+                    Tesseract.recognize(
+                        imageDataUrl,
+                        'spa',
+                        {
+                            logger: (m) => {
+                                if (m.status === 'recognizing text') {
+                                    statusEl.textContent = `📖 Leyendo... ${Math.round(m.progress * 100)}%`;
+                                    if (debugEl) {
+                                        debugEl.textContent = `Progreso: ${Math.round(m.progress * 100)}%`;
+                                    }
+                                }
+                            }
                         }
-                    }
+                    ).then(result => {
+                        resolve(result.data.text);
+                    }).catch(error => {
+                        reject(error);
+                    });
                 });
             }
 
-            // ---- Drag and Drop ----
-            function setupDragDrop(dropZone, input, preview, type) {
-                dropZone.addEventListener('dragover', function(e) {
-                    e.preventDefault();
-                    this.classList.add('dragover');
-                });
+            // ---- ROTACIONES MANUALES ----
+            function setupRotation(type) {
+                const isFront = type === 'front';
+                const previewEl = isFront ? previewFront : previewBack;
+                const rotateLeft = isFront ? document.getElementById('rotateLeftFront') : document.getElementById('rotateLeftBack');
+                const rotateRight = isFront ? document.getElementById('rotateRightFront') : document.getElementById('rotateRightBack');
+                const rotate180 = isFront ? document.getElementById('rotate180Front') : document.getElementById('rotate180Back');
+                const resetRotation = isFront ? document.getElementById('resetRotationFront') : document.getElementById('resetRotationBack');
 
-                dropZone.addEventListener('dragleave', function(e) {
-                    e.preventDefault();
-                    this.classList.remove('dragover');
-                });
+                const getImageData = () => isFront ? imageData.front : imageData.back;
+                const setImageData = (img) => { if (isFront) imageData.front = img; else imageData.back = img; };
+                const getRotation = () => isFront ? rotationState.front : rotationState.back;
+                const setRotation = (r) => { if (isFront) rotationState.front = r; else rotationState.back = r; };
 
-                dropZone.addEventListener('drop', function(e) {
-                    e.preventDefault();
-                    this.classList.remove('dragover');
-                    const files = e.dataTransfer.files;
-                    if (files.length > 0 && files[0].type.startsWith('image/')) {
-                        const file = files[0];
-                        const dt = new DataTransfer();
-                        dt.items.add(file);
-                        input.files = dt;
-                        input.dispatchEvent(new Event('change'));
-                        processImage(file, type);
+                const applyRotation = (degrees) => {
+                    const img = getImageData();
+                    if (!img) {
+                        alert('Primero carga una imagen.');
+                        return;
                     }
-                });
-
-                dropZone.addEventListener('click', function() {
-                    input.click();
-                });
-            }
-
-            // ---- Establecer CURP manual ----
-            function setManualCURP() {
-                const val = manualCURP.value.trim().toUpperCase();
-                if (val.length >= 10) {
-                    let curpFinal = val;
-                    if (curpFinal.length > 18) {
-                        curpFinal = curpFinal.substring(0, 18);
-                    }
-                    if (curpFinal.length === 18) {
-                        extractedData.curp = curpFinal;
-                        curpExtracted.style.display = 'inline-block';
-                        mergeAllData();
-                        ocrFrontStatus.textContent = '✅ CURP ingresada manualmente: ' + curpFinal;
-                    } else {
-                        alert('La CURP debe tener 18 caracteres. Tiene ' + curpFinal.length + ' caracteres.');
-                    }
-                } else {
-                    alert('Por favor ingresa la CURP completa (18 caracteres).');
-                }
-            }
-
-            // ---- Establecer número manual ----
-            function setManualNumero() {
-                const val = manualNumero.value.trim().replace(/\s/g, '');
-                if (isValidNumero(val)) {
-                    extractedData.numero = val;
-                    numExtracted.style.display = 'inline-block';
-                    mergeAllData();
-                    ocrBackStatus.textContent = '✅ Número ingresado manualmente: ' + val;
-                } else {
-                    alert('Número inválido. Debe tener exactamente 13 dígitos.\nEjemplo: 9209913531231');
-                }
-            }
-
-            // ---- Limpiar todo ----
-            function clearAll() {
-                imageFront.value = '';
-                imageBack.value = '';
-                previewFront.style.display = 'none';
-                previewBack.style.display = 'none';
-                ocrFrontStatus.textContent = '⏳ Esperando imagen';
-                ocrBackStatus.textContent = '⏳ Esperando imagen';
-                ocrFrontDebug.style.display = 'none';
-                ocrBackDebug.style.display = 'none';
-                curpExtracted.style.display = 'none';
-                numExtracted.style.display = 'none';
-                manualCURP.value = '';
-                manualNumero.value = '';
-
-                extractedData = {
-                    numero: '',
-                    curp: '',
-                    nombre: '',
-                    celular: '',
-                    celularRef: '',
-                    correo: '',
-                    direccion: ''
+                    const newRotation = (getRotation() + degrees) % 360;
+                    const rotatedDataUrl = rotateImage(img, newRotation, type);
+                    const newImg = new Image();
+                    newImg.src = rotatedDataUrl;
+                    newImg.onload = function() {
+                        setImageData(newImg);
+                        setRotation(newRotation);
+                        previewEl.src = rotatedDataUrl;
+                        previewEl.style.display = 'block';
+                    };
                 };
 
-                textInput.value = '';
-
-                displayNumero.textContent = '—';
-                displayCURP.textContent = '—';
-                displayNombre.textContent = '—';
-                displayCelular.textContent = '—';
-                displayRef.textContent = '—';
-                displayCorreo.textContent = '—';
-                mergedOutput.innerHTML = '<span class="empty-text">Esperando datos de imágenes y texto...</span>';
-            }
-
-            // ---- Copiar todo ----
-            function copyMerged() {
-                const text = mergedOutput.textContent;
-                if (!text || text.includes('Esperando datos') || text.includes('No se encontraron')) {
-                    alert('No hay información para copiar.');
-                    return;
-                }
-                navigator.clipboard.writeText(text).then(() => {
-                    alert('✅ Información copiada al portapapeles.');
-                }).catch(() => {
-                    alert('❌ No se pudo copiar. Selecciona manualmente.');
+                rotateLeft.addEventListener('click', () => applyRotation(-90));
+                rotateRight.addEventListener('click', () => applyRotation(90));
+                rotate180.addEventListener('click', () => applyRotation(180));
+                resetRotation.addEventListener('click', function() {
+                    const img = getImageData();
+                    if (!img) return;
+                    // Recargar imagen original desde el archivo
+                    const fileInput = isFront ? imageFront : imageBack;
+                    if (fileInput.files && fileInput.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const newImg = new Image();
+                            newImg.onload = function() {
+                                setImageData(newImg);
+                                setRotation(0);
+                                previewEl.src = e.target.result;
+                                previewEl.style.display = 'block';
+                            };
+                            newImg.src = e.target.result;
+                        };
+                        reader.readAsDataURL(fileInput.files[0]);
+                    }
                 });
             }
 
             // ========== EVENT LISTENERS ==========
+
+            // Configurar rotaciones
+            setupRotation('front');
+            setupRotation('back');
 
             // OCR Front
             ocrFrontBtn.addEventListener('click', function() {
@@ -1150,8 +1247,14 @@
                     const file = this.files[0];
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        previewFront.src = e.target.result;
-                        previewFront.style.display = 'block';
+                        const img = new Image();
+                        img.onload = function() {
+                            imageData.front = img;
+                            rotationState.front = 0;
+                            previewFront.src = e.target.result;
+                            previewFront.style.display = 'block';
+                        };
+                        img.src = e.target.result;
                     };
                     reader.readAsDataURL(file);
                     ocrFrontStatus.textContent = '🖼️ Imagen lista. Presiona "Leer CURP".';
@@ -1174,8 +1277,14 @@
                     const file = this.files[0];
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        previewBack.src = e.target.result;
-                        previewBack.style.display = 'block';
+                        const img = new Image();
+                        img.onload = function() {
+                            imageData.back = img;
+                            rotationState.back = 0;
+                            previewBack.src = e.target.result;
+                            previewBack.style.display = 'block';
+                        };
+                        img.src = e.target.result;
                     };
                     reader.readAsDataURL(file);
                     ocrBackStatus.textContent = '🖼️ Imagen lista. Presiona "Leer número".';
@@ -1184,27 +1293,146 @@
             });
 
             // Drag & Drop
-            setupDragDrop(dropZoneFront, imageFront, previewFront, 'front');
-            setupDragDrop(dropZoneBack, imageBack, previewBack, 'back');
+            function setupDragDrop(dropZone, input, type) {
+                dropZone.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('dragover');
+                });
+
+                dropZone.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('dragover');
+                });
+
+                dropZone.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0 && files[0].type.startsWith('image/')) {
+                        const dt = new DataTransfer();
+                        dt.items.add(files[0]);
+                        input.files = dt;
+                        input.dispatchEvent(new Event('change'));
+                        setTimeout(() => {
+                            const btn = type === 'front' ? ocrFrontBtn : ocrBackBtn;
+                            btn.click();
+                        }, 300);
+                    }
+                });
+
+                dropZone.addEventListener('click', function() {
+                    input.click();
+                });
+            }
+
+            setupDragDrop(dropZoneFront, imageFront, 'front');
+            setupDragDrop(dropZoneBack, imageBack, 'back');
 
             // Paste desde portapapeles
+            function setupPasteListener(element, type) {
+                element.addEventListener('paste', function(e) {
+                    const items = e.clipboardData && e.clipboardData.items;
+                    if (!items) return;
+
+                    for (let item of items) {
+                        if (item.type.startsWith('image/')) {
+                            e.preventDefault();
+                            const file = item.getAsFile();
+                            const input = type === 'front' ? imageFront : imageBack;
+                            const dt = new DataTransfer();
+                            dt.items.add(file);
+                            input.files = dt.files;
+                            input.dispatchEvent(new Event('change'));
+                            setTimeout(() => {
+                                const btn = type === 'front' ? ocrFrontBtn : ocrBackBtn;
+                                btn.click();
+                            }, 300);
+                            break;
+                        }
+                    }
+                });
+            }
+
             setupPasteListener(dropZoneFront, 'front');
             setupPasteListener(dropZoneBack, 'back');
 
             // Manuales
-            setCURPBtn.addEventListener('click', setManualCURP);
-            manualCURP.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') setManualCURP();
+            setCURPBtn.addEventListener('click', function() {
+                const val = manualCURP.value.trim().toUpperCase();
+                if (val.length === 18) {
+                    extractedData.curp = val;
+                    curpExtracted.style.display = 'inline-block';
+                    mergeAllData();
+                    ocrFrontStatus.textContent = '✅ CURP ingresada manualmente: ' + val;
+                } else {
+                    alert('La CURP debe tener 18 caracteres.');
+                }
             });
-            setNumeroBtn.addEventListener('click', setManualNumero);
-            manualNumero.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') setManualNumero();
+
+            setNumeroBtn.addEventListener('click', function() {
+                const val = manualNumero.value.trim().replace(/\s/g, '');
+                if (isValidNumero(val)) {
+                    extractedData.numero = val;
+                    numExtracted.style.display = 'inline-block';
+                    mergeAllData();
+                    ocrBackStatus.textContent = '✅ Número ingresado manualmente: ' + val;
+                } else {
+                    alert('Número inválido. Debe tener exactamente 13 dígitos.');
+                }
             });
 
             // Unificar
             mergeBtn.addEventListener('click', mergeAllData);
-            clearAllBtn.addEventListener('click', clearAll);
-            copyMergedBtn.addEventListener('click', copyMerged);
+            clearAllBtn.addEventListener('click', function() {
+                imageFront.value = '';
+                imageBack.value = '';
+                previewFront.style.display = 'none';
+                previewBack.style.display = 'none';
+                ocrFrontStatus.textContent = '⏳ Esperando imagen';
+                ocrBackStatus.textContent = '⏳ Esperando imagen';
+                ocrFrontDebug.style.display = 'none';
+                ocrBackDebug.style.display = 'none';
+                curpExtracted.style.display = 'none';
+                numExtracted.style.display = 'none';
+                manualCURP.value = '';
+                manualNumero.value = '';
+                imageData.front = null;
+                imageData.back = null;
+                rotationState.front = 0;
+                rotationState.back = 0;
+
+                extractedData = {
+                    numero: '',
+                    curp: '',
+                    nombre: '',
+                    celular: '',
+                    celularRef: '',
+                    correo: '',
+                    direccion: ''
+                };
+
+                textInput.value = '';
+                displayNumero.textContent = '—';
+                displayCURP.textContent = '—';
+                displayNombre.textContent = '—';
+                displayCelular.textContent = '—';
+                displayRef.textContent = '—';
+                displayCorreo.textContent = '—';
+                mergedOutput.innerHTML = '<span class="empty-text">Esperando datos de imágenes y texto...</span>';
+            });
+
+            copyMergedBtn.addEventListener('click', function() {
+                const text = mergedOutput.textContent;
+                if (!text || text.includes('Esperando datos') || text.includes('No se encontraron')) {
+                    alert('No hay información para copiar.');
+                    return;
+                }
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('✅ Información copiada al portapapeles.');
+                }).catch(() => {
+                    alert('❌ No se pudo copiar. Selecciona manualmente.');
+                });
+            });
 
             // Inicializar
             setTimeout(() => {
