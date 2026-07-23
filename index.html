@@ -829,4 +829,481 @@
                 if (data.numero) out += `🔢 NÚMERO INE (13 dígitos): ${data.numero}\n`;
                 if (data.celular) out += `📱 CELULAR CLIENTE: ${data.celular}\n`;
                 if (data.celularRef) out += `📞 CELULAR REFERENCIA: ${data.celularRef}\n`;
-                if (data.c
+                if (data.correo) out += `✉️ CORREO: ${data.correo}\n`;
+                if (data.direccion) out += `📍 DIRECCIÓN: ${data.direccion}`;
+                return out.trim();
+            }
+
+            // ==========================================================
+            // 6. UNIFICAR Y MOSTRAR RESULTADOS
+            // ==========================================================
+
+            function mergeAllData() {
+                const textData = organizeClientInfo(textInput.value);
+
+                const merged = {
+                    numero: state.extracted.numero || '',
+                    curp: state.extracted.curp || '',
+                    nombre: textData.nombre || state.extracted.nombre || '',
+                    celular: textData.celular || state.extracted.celular || '',
+                    celularRef: textData.celularRef || state.extracted.celularRef || '',
+                    correo: textData.correo || state.extracted.correo || '',
+                    direccion: textData.direccion || state.extracted.direccion || ''
+                };
+
+                displayNumero.textContent = merged.numero || '—';
+                displayCURP.textContent = merged.curp || '—';
+                displayNombre.textContent = merged.nombre || '—';
+                displayCelular.textContent = merged.celular || '—';
+                displayRef.textContent = merged.celularRef || '—';
+                displayCorreo.textContent = merged.correo || '—';
+
+                const formatted = formatMerged(merged);
+                if (formatted) {
+                    mergedOutput.textContent = formatted;
+                    mergedOutput.className = 'organized-output';
+                } else {
+                    mergedOutput.innerHTML = '<span class="empty-text">No se encontraron datos válidos.</span>';
+                }
+
+                return merged;
+            }
+
+            // ==========================================================
+            // 7. ROTACIÓN DE IMÁGENES
+            // ==========================================================
+
+            function rotateImage(img, degrees, type) {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                const rad = degrees * Math.PI / 180;
+                const sin = Math.abs(Math.sin(rad));
+                const cos = Math.abs(Math.cos(rad));
+
+                const w = img.naturalWidth || img.width || 200;
+                const h = img.naturalHeight || img.height || 200;
+
+                canvas.width = w * cos + h * sin;
+                canvas.height = w * sin + h * cos;
+
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate(rad);
+                ctx.drawImage(img, -w / 2, -h / 2);
+
+                const dataUrl = canvas.toDataURL('image/png');
+                const preview = type === 'front' ? previewFront : previewBack;
+                preview.src = dataUrl;
+                preview.style.display = 'block';
+
+                // Guardar la imagen rotada
+                const rotatedImg = new Image();
+                rotatedImg.src = dataUrl;
+                rotatedImg.onload = function() {
+                    if (type === 'front') {
+                        state.current.front = rotatedImg;
+                    } else {
+                        state.current.back = rotatedImg;
+                    }
+                };
+
+                return dataUrl;
+            }
+
+            // ==========================================================
+            // 8. OCR (Tesseract)
+            // ==========================================================
+
+            async function performOCR(imageDataUrl, statusEl, debugEl) {
+                return new Promise((resolve, reject) => {
+                    Tesseract.recognize(imageDataUrl, 'spa', {
+                        logger: (m) => {
+                            if (m.status === 'recognizing text') {
+                                statusEl.textContent = `📖 Leyendo... ${Math.round(m.progress * 100)}%`;
+                                if (debugEl) {
+                                    debugEl.textContent = `Progreso: ${Math.round(m.progress * 100)}%`;
+                                }
+                            }
+                        }
+                    }).then(result => {
+                        resolve(result.data.text);
+                    }).catch(error => {
+                        reject(error);
+                    });
+                });
+            }
+
+            // ==========================================================
+            // 9. PROCESAR IMAGEN (OCR + EXTRACCIÓN)
+            // ==========================================================
+
+            async function processImage(type) {
+                const isFront = type === 'front';
+                const statusEl = isFront ? ocrFrontStatus : ocrBackStatus;
+                const debugEl = isFront ? ocrFrontDebug : ocrBackDebug;
+                const btnEl = isFront ? ocrFrontBtn : ocrBackBtn;
+                const previewEl = isFront ? previewFront : previewBack;
+
+                // Usar la imagen actual (con rotación aplicada)
+                let imgToProcess = isFront ? state.current.front : state.current.back;
+
+                if (!imgToProcess) {
+                    statusEl.textContent = '⚠️ Primero carga una imagen.';
+                    return;
+                }
+
+                statusEl.textContent = '⏳ Procesando...';
+                debugEl.style.display = 'block';
+                debugEl.textContent = 'Iniciando OCR...';
+                btnEl.disabled = true;
+
+                try {
+                    // Convertir a canvas
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = imgToProcess.naturalWidth || imgToProcess.width;
+                    canvas.height = imgToProcess.naturalHeight || imgToProcess.height;
+                    ctx.drawImage(imgToProcess, 0, 0);
+                    const imageDataUrl = canvas.toDataURL('image/png');
+
+                    // Ejecutar OCR
+                    let ocrText = await performOCR(imageDataUrl, statusEl, debugEl);
+
+                    // Si es front y no encuentra CURP, probar otras orientaciones
+                    if (isFront && !extractCurpFromText(ocrText)) {
+                        statusEl.textContent = '🔄 Probando otras orientaciones...';
+                        const rotations = [90, 180, 270];
+                        let found = false;
+
+                        for (const angle of rotations) {
+                            const rc = document.createElement('canvas');
+                            const rctx = rc.getContext('2d');
+                            const rad = angle * Math.PI / 180;
+                            const sin = Math.abs(Math.sin(rad));
+                            const cos = Math.abs(Math.cos(rad));
+                            const w = imgToProcess.naturalWidth || imgToProcess.width;
+                            const h = imgToProcess.naturalHeight || imgToProcess.height;
+                            rc.width = w * cos + h * sin;
+                            rc.height = w * sin + h * cos;
+                            rctx.translate(rc.width / 2, rc.height / 2);
+                            rctx.rotate(rad);
+                            rctx.drawImage(imgToProcess, -w / 2, -h / 2);
+                            const rotatedDataUrl = rc.toDataURL('image/png');
+
+                            const testText = await performOCR(rotatedDataUrl, statusEl, debugEl);
+                            if (extractCurpFromText(testText)) {
+                                ocrText = testText;
+                                statusEl.textContent = `✅ Orientación corregida (${angle}°)`;
+                                // Aplicar rotación a la imagen actual
+                                const newRotation = (state.rotation[type] + angle) % 360;
+                                rotateImage(imgToProcess, newRotation, type);
+                                state.rotation[type] = newRotation;
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (!found) {
+                            statusEl.textContent = '⚠️ No se encontró CURP en ninguna orientación.';
+                        }
+                    }
+
+                    statusEl.textContent = '✅ Imagen procesada.';
+                    debugEl.textContent = `📝 Texto OCR: ${ocrText.substring(0, 200)}${ocrText.length > 200 ? '...' : ''}`;
+
+                    const extracted = extractINEData(ocrText);
+
+                    if (isFront) {
+                        if (extracted.curp && extracted.curp.length >= 10) {
+                            let curpFinal = extracted.curp;
+                            if (curpFinal.length > 18) curpFinal = curpFinal.substring(0, 18);
+                            if (curpFinal.length === 18) {
+                                state.extracted.curp = curpFinal;
+                                curpExtracted.style.display = 'inline-block';
+                                manualCURP.value = curpFinal;
+                                statusEl.textContent = '✅ CURP detectada: ' + curpFinal;
+                                debugEl.textContent += `\n✅ CURP encontrada: ${curpFinal}`;
+                            } else {
+                                statusEl.textContent = '⚠️ CURP incompleta. Ingresa manualmente.';
+                                debugEl.textContent += `\n⚠️ CURP incompleta: ${curpFinal}`;
+                            }
+                        } else {
+                            statusEl.textContent = '⚠️ No se detectó CURP. Verifica la orientación o ingresa manualmente.';
+                            debugEl.textContent += '\n⚠️ No se encontró CURP. Prueba rotar la imagen.';
+                        }
+                    } else {
+                        if (extracted.numero && isValidNumero(extracted.numero)) {
+                            state.extracted.numero = extracted.numero;
+                            numExtracted.style.display = 'inline-block';
+                            manualNumero.value = extracted.numero;
+                            statusEl.textContent = '✅ Número detectado: ' + extracted.numero;
+                            debugEl.textContent += `\n✅ Número encontrado: ${extracted.numero}`;
+                        } else {
+                            statusEl.textContent = '⚠️ No se detectó el número. Verifica la orientación.';
+                            debugEl.textContent += '\n⚠️ No se encontraron 13 dígitos.';
+                        }
+                    }
+
+                    mergeAllData();
+                    console.log('OCR Texto completo:', ocrText);
+                } catch (error) {
+                    statusEl.textContent = '❌ Error: ' + error.message;
+                    debugEl.textContent = `❌ Error: ${error.message}`;
+                    console.error(error);
+                } finally {
+                    btnEl.disabled = false;
+                }
+            }
+
+            // ==========================================================
+            // 10. CONFIGURAR ROTACIÓN MANUAL
+            // ==========================================================
+
+            function setupRotation(type) {
+                const isFront = type === 'front';
+                const preview = isFront ? previewFront : previewBack;
+
+                const getImg = () => isFront ? state.current.front : state.current.back;
+                const setImg = (img) => { if (isFront) state.current.front = img;
+                    else state.current.back = img; };
+                const getRot = () => isFront ? state.rotation.front : state.rotation.back;
+                const setRot = (r) => { if (isFront) state.rotation.front = r;
+                    else state.rotation.back = r; };
+                const getOrig = () => isFront ? state.original.front : state.original.back;
+
+                const applyRotation = (degrees) => {
+                    const img = getImg();
+                    if (!img) { alert('Primero carga una imagen.'); return; }
+                    const newRot = (getRot() + degrees) % 360;
+                    const dataUrl = rotateImage(img, newRot, type);
+                    const newImg = new Image();
+                    newImg.src = dataUrl;
+                    newImg.onload = function() {
+                        setImg(newImg);
+                        setRot(newRot);
+                        preview.src = dataUrl;
+                        preview.style.display = 'block';
+                    };
+                };
+
+                const btnLeft = document.getElementById(isFront ? 'rotateLeftFront' : 'rotateLeftBack');
+                const btnRight = document.getElementById(isFront ? 'rotateRightFront' : 'rotateRightBack');
+                const btn180 = document.getElementById(isFront ? 'rotate180Front' : 'rotate180Back');
+                const btnReset = document.getElementById(isFront ? 'resetRotationFront' : 'resetRotationBack');
+
+                btnLeft.addEventListener('click', () => applyRotation(-90));
+                btnRight.addEventListener('click', () => applyRotation(90));
+                btn180.addEventListener('click', () => applyRotation(180));
+                btnReset.addEventListener('click', function() {
+                    const orig = getOrig();
+                    if (!orig) { alert('No hay imagen original para restaurar.'); return; }
+                    setImg(orig);
+                    setRot(0);
+                    preview.src = orig.src;
+                    preview.style.display = 'block';
+                    const copy = new Image();
+                    copy.src = orig.src;
+                    copy.onload = function() { setImg(copy); };
+                });
+            }
+
+            // ==========================================================
+            // 11. CONFIGURAR CARGA DE IMÁGENES
+            // ==========================================================
+
+            function setupImageUpload(input, preview, dropZone, type) {
+                const isFront = type === 'front';
+
+                input.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const file = this.files[0];
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const img = new Image();
+                            img.onload = function() {
+                                // Guardar original
+                                const origCopy = new Image();
+                                origCopy.src = e.target.result;
+                                origCopy.onload = function() {
+                                    if (isFront) state.original.front = origCopy;
+                                    else state.original.back = origCopy;
+                                };
+                                // Guardar como actual
+                                const curCopy = new Image();
+                                curCopy.src = e.target.result;
+                                curCopy.onload = function() {
+                                    if (isFront) {
+                                        state.current.front = curCopy;
+                                        state.rotation.front = 0;
+                                    } else {
+                                        state.current.back = curCopy;
+                                        state.rotation.back = 0;
+                                    }
+                                    preview.src = e.target.result;
+                                    preview.style.display = 'block';
+                                };
+                            };
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                        const statusEl = isFront ? ocrFrontStatus : ocrBackStatus;
+                        statusEl.textContent = '🖼️ Imagen lista. Presiona "Leer".';
+                        const debugEl = isFront ? ocrFrontDebug : ocrBackDebug;
+                        debugEl.style.display = 'none';
+                    }
+                });
+
+                // Drag & Drop
+                dropZone.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('dragover');
+                });
+                dropZone.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('dragover');
+                });
+                dropZone.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length && files[0].type.startsWith('image/')) {
+                        const dt = new DataTransfer();
+                        dt.items.add(files[0]);
+                        input.files = dt;
+                        input.dispatchEvent(new Event('change'));
+                        setTimeout(() => {
+                            const btn = isFront ? ocrFrontBtn : ocrBackBtn;
+                            btn.click();
+                        }, 300);
+                    }
+                });
+                dropZone.addEventListener('click', function() { input.click(); });
+
+                // Paste desde portapapeles
+                dropZone.addEventListener('paste', function(e) {
+                    const items = e.clipboardData && e.clipboardData.items;
+                    if (!items) return;
+                    for (const item of items) {
+                        if (item.type.startsWith('image/')) {
+                            e.preventDefault();
+                            const file = item.getAsFile();
+                            const dt = new DataTransfer();
+                            dt.items.add(file);
+                            input.files = dt;
+                            input.dispatchEvent(new Event('change'));
+                            setTimeout(() => {
+                                const btn = isFront ? ocrFrontBtn : ocrBackBtn;
+                                btn.click();
+                            }, 300);
+                            break;
+                        }
+                    }
+                });
+            }
+
+            // ==========================================================
+            // 12. INICIALIZAR
+            // ==========================================================
+
+            // Configurar rotaciones
+            setupRotation('front');
+            setupRotation('back');
+
+            // Configurar cargas de imágenes
+            setupImageUpload(imageFront, previewFront, dropZoneFront, 'front');
+            setupImageUpload(imageBack, previewBack, dropZoneBack, 'back');
+
+            // Botones OCR
+            ocrFrontBtn.addEventListener('click', () => processImage('front'));
+            ocrBackBtn.addEventListener('click', () => processImage('back'));
+
+            // Manuales
+            setCURPBtn.addEventListener('click', function() {
+                const val = manualCURP.value.trim().toUpperCase();
+                if (val.length === 18 && /^[A-Z0-9]{18}$/.test(val)) {
+                    state.extracted.curp = val;
+                    curpExtracted.style.display = 'inline-block';
+                    mergeAllData();
+                    ocrFrontStatus.textContent = '✅ CURP ingresada manualmente: ' + val;
+                } else {
+                    alert('La CURP debe tener 18 caracteres alfanuméricos.');
+                }
+            });
+            manualCURP.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') setCURPBtn.click();
+            });
+
+            setNumeroBtn.addEventListener('click', function() {
+                const val = manualNumero.value.trim().replace(/\s/g, '');
+                if (isValidNumero(val)) {
+                    state.extracted.numero = val;
+                    numExtracted.style.display = 'inline-block';
+                    mergeAllData();
+                    ocrBackStatus.textContent = '✅ Número ingresado manualmente: ' + val;
+                } else {
+                    alert('Número inválido. Debe tener exactamente 13 dígitos.');
+                }
+            });
+            manualNumero.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') setNumeroBtn.click();
+            });
+
+            // Unificar
+            mergeBtn.addEventListener('click', mergeAllData);
+
+            // Limpiar todo
+            clearAllBtn.addEventListener('click', function() {
+                imageFront.value = '';
+                imageBack.value = '';
+                previewFront.style.display = 'none';
+                previewBack.style.display = 'none';
+                ocrFrontStatus.textContent = '⏳ Esperando imagen';
+                ocrBackStatus.textContent = '⏳ Esperando imagen';
+                ocrFrontDebug.style.display = 'none';
+                ocrBackDebug.style.display = 'none';
+                curpExtracted.style.display = 'none';
+                numExtracted.style.display = 'none';
+                manualCURP.value = '';
+                manualNumero.value = '';
+                state.original.front = null;
+                state.original.back = null;
+                state.current.front = null;
+                state.current.back = null;
+                state.rotation.front = 0;
+                state.rotation.back = 0;
+                state.extracted = { numero: '', curp: '', nombre: '', celular: '', celularRef: '', correo: '',
+                    direccion: '' };
+                textInput.value = '';
+                displayNumero.textContent = '—';
+                displayCURP.textContent = '—';
+                displayNombre.textContent = '—';
+                displayCelular.textContent = '—';
+                displayRef.textContent = '—';
+                displayCorreo.textContent = '—';
+                mergedOutput.innerHTML = '<span class="empty-text">Esperando datos de imágenes y texto...</span>';
+            });
+
+            // Copiar
+            copyMergedBtn.addEventListener('click', function() {
+                const text = mergedOutput.textContent;
+                if (!text || text.includes('Esperando datos') || text.includes('No se encontraron')) {
+                    alert('No hay información para copiar.');
+                    return;
+                }
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('✅ Información copiada al portapapeles.');
+                }).catch(() => {
+                    alert('❌ No se pudo copiar. Selecciona manualmente.');
+                });
+            });
+
+            // Inicializar con datos de ejemplo
+            setTimeout(() => {
+                mergeAllData();
+                manualCURP.placeholder = 'Ej: HEOG930215MJCRRR07';
+            }, 150);
+
+        })();
+    </script>
+</body>
+</html>
