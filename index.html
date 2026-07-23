@@ -7,6 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js">
     </script>
     <style>
+        /* ===== RESET & BASE ===== */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -29,6 +30,8 @@
             box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
             padding: 2rem 2rem 2.5rem;
         }
+
+        /* ===== TIPOGRAFÍA ===== */
         h1 {
             font-weight: 600;
             font-size: 2rem;
@@ -46,6 +49,8 @@
             padding-left: 1.2rem;
             font-weight: 400;
         }
+
+        /* ===== GRID ===== */
         .grid-2col {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -61,6 +66,8 @@
                 padding: 1.5rem;
             }
         }
+
+        /* ===== CARDS ===== */
         .card {
             background: #f9fbfe;
             border-radius: 26px;
@@ -78,25 +85,8 @@
             gap: 0.5rem;
             margin-bottom: 1.2rem;
         }
-        .card h2 i {
-            font-size: 1.4rem;
-        }
-        textarea {
-            width: 100%;
-            min-height: 120px;
-            padding: 0.9rem 1rem;
-            border: 1px solid #ccd7e8;
-            border-radius: 20px;
-            font-size: 0.95rem;
-            font-family: 'Segoe UI', monospace;
-            background: white;
-            resize: vertical;
-            transition: 0.15s;
-        }
-        textarea:focus {
-            outline: 2px solid #2563eb;
-            border-color: transparent;
-        }
+
+        /* ===== BOTONES ===== */
         .btn {
             background: #14253e;
             color: white;
@@ -138,40 +128,110 @@
         .btn-primary:hover {
             background: #1d4ed8;
         }
-        .file-upload-wrap {
+        .btn-warning {
+            background: #f59e0b;
+        }
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        .btn-danger {
+            background: #ef4444;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .btn-sm {
+            padding: 0.4rem 1.2rem;
+            font-size: 0.85rem;
+            margin-top: 0;
+        }
+
+        /* ===== FORMULARIOS ===== */
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 0.9rem 1rem;
+            border: 1px solid #ccd7e8;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-family: 'Segoe UI', monospace;
+            background: white;
+            resize: vertical;
+            transition: 0.15s;
+        }
+        textarea:focus {
+            outline: 2px solid #2563eb;
+            border-color: transparent;
+        }
+
+        /* ===== DROP ZONE ===== */
+        .drop-zone {
+            border: 2px dashed #b7c8e2;
+            border-radius: 20px;
+            padding: 1rem;
+            text-align: center;
+            transition: 0.2s;
+            background: #fafcff;
+            cursor: pointer;
+            min-height: 80px;
             display: flex;
             flex-direction: column;
-            gap: 0.8rem;
-            margin: 0.3rem 0 0.2rem;
+            align-items: center;
+            justify-content: center;
         }
-        .file-label {
-            background: white;
-            border: 2px dashed #b7c8e2;
-            border-radius: 30px;
-            padding: 0.8rem 1.2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
-            font-weight: 500;
-            color: #14253e;
-            font-size: 0.9rem;
-        }
-        .file-label:hover {
-            background: #edf3fe;
+        .drop-zone.dragover {
             border-color: #2563eb;
+            background: #edf3fe;
         }
-        .file-label input {
+        .drop-zone .drop-text {
+            color: #6b7d9a;
+            font-size: 0.85rem;
+        }
+        .drop-zone .drop-text strong {
+            color: #2563eb;
+        }
+        .drop-zone input {
             display: none;
         }
+        .paste-hint {
+            font-size: 0.75rem;
+            color: #8a9bb0;
+            margin-top: 0.3rem;
+        }
+        .paste-hint kbd {
+            background: #e8edf6;
+            padding: 0.1rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* ===== PREVIEW ===== */
         .preview-img {
             max-width: 100%;
-            max-height: 150px;
+            max-height: 200px;
             border-radius: 18px;
             margin: 0.4rem 0 0.2rem;
             border: 1px solid #dfe7f0;
             background: #f1f5f9;
             object-fit: contain;
         }
+
+        /* ===== ROTACIÓN ===== */
+        .rotation-controls {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-top: 0.4rem;
+            justify-content: center;
+        }
+        .rotation-controls .btn {
+            padding: 0.25rem 0.8rem;
+            font-size: 0.75rem;
+            margin-top: 0;
+        }
+
+        /* ===== RESULTADOS ===== */
         .result-box {
             background: white;
             border-radius: 20px;
@@ -210,10 +270,26 @@
             font-style: italic;
             background: transparent;
         }
-        .result-value.conflict {
-            background: #fef3c7;
-            border: 1px solid #f59e0b;
+
+        /* ===== SALIDA ORGANIZADA ===== */
+        .organized-output {
+            background: #f2f6fd;
+            border-radius: 16px;
+            padding: 1rem 1.2rem;
+            font-family: 'Segoe UI', monospace;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            border: 1px solid #dce6f5;
+            white-space: pre-wrap;
+            word-break: break-word;
+            min-height: 150px;
         }
+        .organized-output .empty-text {
+            color: #8896ae;
+            font-style: italic;
+        }
+
+        /* ===== OTROS ===== */
         .ocr-status {
             margin-top: 0.5rem;
             font-size: 0.9rem;
@@ -221,12 +297,18 @@
             min-height: 1.6rem;
             font-weight: 500;
         }
-        .flex-row {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.8rem;
-            justify-content: space-between;
+        .ocr-debug {
+            background: #f8f9fc;
+            border-radius: 12px;
+            padding: 0.5rem 0.8rem;
+            font-size: 0.75rem;
+            color: #4a5a72;
+            border: 1px solid #e2eaf6;
+            margin-top: 0.3rem;
+            max-height: 80px;
+            overflow-y: auto;
+            word-break: break-all;
+            font-family: monospace;
         }
         .icon-tag {
             background: #dce6f5;
@@ -245,88 +327,25 @@
             font-weight: 600;
             letter-spacing: 0.3px;
         }
-        .organized-output {
-            background: #f2f6fd;
-            border-radius: 16px;
-            padding: 1rem 1.2rem;
-            font-family: 'Segoe UI', monospace;
-            font-size: 0.95rem;
-            line-height: 1.8;
-            border: 1px solid #dce6f5;
-            white-space: pre-wrap;
-            word-break: break-word;
-            min-height: 150px;
-        }
-        .organized-output .empty-text {
-            color: #8896ae;
-            font-style: italic;
-        }
-        hr {
-            border: none;
-            border-top: 2px solid #e2eaf6;
-            margin: 1.5rem 0 0.8rem;
-        }
-        .footer-note {
-            margin-top: 1.8rem;
+        .tip-box {
+            background: #fef9e7;
+            border-left: 4px solid #f59e0b;
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            margin-top: 0.5rem;
             font-size: 0.85rem;
-            color: #6b7d9a;
-            text-align: center;
+            color: #78350f;
         }
-        .section-divider {
-            margin: 1.8rem 0 0.5rem;
-            border-top: 3px dashed #dce3ef;
+        .tip-box strong {
+            color: #b45309;
         }
-        .github-badge {
-            display: inline-block;
-            background: #24292e;
-            color: white;
-            padding: 0.2rem 1rem;
-            border-radius: 40px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            text-decoration: none;
-            margin-left: 0.5rem;
-        }
-        .github-badge:hover {
-            background: #3a4149;
-        }
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-        .image-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        @media (max-width: 600px) {
-            .image-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        .image-card {
-            background: white;
-            border-radius: 16px;
-            padding: 1rem;
-            border: 1px solid #e4eaf3;
-            position: relative;
-        }
-        .image-card h3 {
-            font-size: 0.9rem;
-            color: #1f3a5e;
-            margin-bottom: 0.5rem;
-            text-align: center;
-        }
-        .extracted-badge {
-            display: inline-block;
-            background: #2563eb;
-            color: white;
-            padding: 0.1rem 0.6rem;
+        .example-badge {
+            background: #e8edf6;
+            padding: 0.2rem 0.8rem;
             border-radius: 30px;
             font-size: 0.7rem;
-            font-weight: 600;
+            color: #1f3a5e;
+            font-weight: 500;
         }
         .merge-section {
             background: #f0f4ff;
@@ -363,124 +382,128 @@
             color: #1f3a5e;
             font-size: 0.85rem;
         }
-        .btn-sm {
-            padding: 0.4rem 1.2rem;
-            font-size: 0.85rem;
-            margin-top: 0;
+        .image-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
         }
-        .tip-box {
-            background: #fef9e7;
-            border-left: 4px solid #f59e0b;
-            padding: 0.8rem 1rem;
-            border-radius: 12px;
-            margin-top: 0.5rem;
-            font-size: 0.85rem;
-            color: #78350f;
+        @media (max-width: 600px) {
+            .image-grid {
+                grid-template-columns: 1fr;
+            }
         }
-        .tip-box strong {
-            color: #b45309;
-        }
-        .example-badge {
-            background: #e8edf6;
-            padding: 0.2rem 0.8rem;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            color: #1f3a5e;
-            font-weight: 500;
-        }
-        .drop-zone {
-            border: 2px dashed #b7c8e2;
-            border-radius: 20px;
+        .image-card {
+            background: white;
+            border-radius: 16px;
             padding: 1rem;
+            border: 1px solid #e4eaf3;
+        }
+        .image-card h3 {
+            font-size: 0.9rem;
+            color: #1f3a5e;
+            margin-bottom: 0.5rem;
             text-align: center;
-            transition: 0.2s;
-            background: #fafcff;
-            cursor: pointer;
-            min-height: 80px;
+        }
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.8rem;
+            justify-content: space-between;
+        }
+        .section-divider {
+            margin: 1.8rem 0 0.5rem;
+            border-top: 3px dashed #dce3ef;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #e2eaf6;
+            margin: 1.5rem 0 0.8rem;
+        }
+        .footer-note {
+            margin-top: 1.8rem;
+            font-size: 0.85rem;
+            color: #6b7d9a;
+            text-align: center;
+        }
+        .github-badge {
+            display: inline-block;
+            background: #24292e;
+            color: white;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-decoration: none;
+            margin-left: 0.5rem;
+        }
+        .github-badge:hover {
+            background: #3a4149;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .file-upload-wrap {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            gap: 0.8rem;
+            margin: 0.3rem 0 0.2rem;
         }
-        .drop-zone.dragover {
-            border-color: #2563eb;
-            background: #edf3fe;
-        }
-        .drop-zone .drop-text {
-            color: #6b7d9a;
-            font-size: 0.85rem;
-        }
-        .drop-zone .drop-text strong {
-            color: #2563eb;
-        }
-        .paste-hint {
-            font-size: 0.75rem;
-            color: #8a9bb0;
-            margin-top: 0.3rem;
-        }
-        .paste-hint kbd {
-            background: #e8edf6;
-            padding: 0.1rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-        .ocr-debug {
-            background: #f8f9fc;
-            border-radius: 12px;
-            padding: 0.5rem 0.8rem;
-            font-size: 0.75rem;
-            color: #4a5a72;
-            border: 1px solid #e2eaf6;
-            margin-top: 0.3rem;
-            max-height: 80px;
-            overflow-y: auto;
-            word-break: break-all;
-            font-family: monospace;
-        }
-        .warning-badge {
+        .extracted-badge {
             display: inline-block;
-            background: #f59e0b;
+            background: #2563eb;
             color: white;
             padding: 0.1rem 0.6rem;
             border-radius: 30px;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             font-weight: 600;
-            margin-left: 0.3rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
+
+        <!-- ===== HEADER ===== -->
         <div class="header-actions">
-            <h1>📋 <span>Organizador de datos</span></h1>
+            <h1>📋 Organizador de datos</h1>
             <a href="https://github.com" target="_blank" class="github-badge">🔗 GitHub</a>
         </div>
         <div class="subhead">
-            Sube imágenes recortadas · <kbd>Ctrl+V</kbd> para pegar desde portapapeles · Arrastra y suelta archivos
+            Sube imágenes en cualquier orientación · <kbd>Ctrl+V</kbd> para pegar · Arrastra y suelta archivos
         </div>
 
-        <!-- SECCIÓN 1: EXTRACCIÓN DE IMÁGENES (INE) -->
+        <!-- ===== SECCIÓN 1: EXTRACCIÓN DE IMÁGENES ===== -->
         <div class="card" style="margin-bottom: 2rem;">
-            <h2><span>🖼️</span> Sección 1 · Extraer de imágenes INE</h2>
+            <h2>🖼️ Sección 1 · Extraer de imágenes INE</h2>
             <div class="tip-box">
-                💡 <strong>Consejo:</strong> Usa <kbd>Ctrl+V</kbd> (Windows) o <kbd>⌘+V</kbd> (Mac) para pegar una imagen desde el portapapeles. También puedes arrastrar y soltar archivos.<br>
-                ⚠️ <strong>Importante:</strong> El OCR puede confundir <strong>"0" (cero)</strong> con <strong>"O" (letra O)</strong>. Revisa el resultado y corrígelo manualmente si es necesario.
+                💡 <strong>Consejo:</strong> Usa <kbd>Ctrl+V</kbd> para pegar una imagen desde el portapapeles. También puedes arrastrar y soltar archivos.<br>
+                ⚠️ Si la imagen está al revés, usa los botones de rotación para corregirla.
             </div>
+
             <div class="image-grid">
+                <!-- CURP -->
                 <div class="image-card">
                     <h3>📸 CURP</h3>
                     <div class="file-upload-wrap">
                         <div class="drop-zone" id="dropZoneFront">
                             <span class="drop-text">📤 <strong>Arrastra</strong> una imagen o <strong>haz clic</strong> para seleccionar</span>
                             <span class="paste-hint">O usa <kbd>Ctrl+V</kbd> para pegar desde el portapapeles</span>
-                            <input type="file" id="imageFront" accept="image/*" style="display:none;">
+                            <input type="file" id="imageFront" accept="image/*">
                         </div>
                         <div style="display: flex; justify-content: center;">
                             <img id="previewFront" class="preview-img" style="display: none;" alt="Vista previa">
                         </div>
+                        <div class="rotation-controls">
+                            <button class="btn btn-sm btn-warning" id="rotateLeftFront">↺ Izquierda</button>
+                            <button class="btn btn-sm btn-warning" id="rotateRightFront">↻ Derecha</button>
+                            <button class="btn btn-sm btn-danger" id="rotate180Front">↻ 180°</button>
+                            <button class="btn btn-sm btn-outline" id="resetRotationFront">⟲ Reset</button>
+                        </div>
                         <button class="btn btn-primary" id="ocrFrontBtn" style="width: 100%; justify-content: center;">🧠 Leer CURP</button>
-                        <div id="ocrFrontStatus" class="ocr-status" style="font-size: 0.8rem;">⏳ Esperando imagen</div>
+                        <div id="ocrFrontStatus" class="ocr-status">⏳ Esperando imagen</div>
                         <div id="ocrFrontDebug" class="ocr-debug" style="display:none;"></div>
                     </div>
                     <div class="manual-input">
@@ -489,19 +512,27 @@
                         <button class="btn btn-sm btn-outline" id="setCURPBtn">Aplicar</button>
                     </div>
                 </div>
+
+                <!-- Número -->
                 <div class="image-card">
                     <h3>📸 Número 13 dígitos</h3>
                     <div class="file-upload-wrap">
                         <div class="drop-zone" id="dropZoneBack">
                             <span class="drop-text">📤 <strong>Arrastra</strong> una imagen o <strong>haz clic</strong> para seleccionar</span>
                             <span class="paste-hint">O usa <kbd>Ctrl+V</kbd> para pegar desde el portapapeles</span>
-                            <input type="file" id="imageBack" accept="image/*" style="display:none;">
+                            <input type="file" id="imageBack" accept="image/*">
                         </div>
                         <div style="display: flex; justify-content: center;">
                             <img id="previewBack" class="preview-img" style="display: none;" alt="Vista previa">
                         </div>
+                        <div class="rotation-controls">
+                            <button class="btn btn-sm btn-warning" id="rotateLeftBack">↺ Izquierda</button>
+                            <button class="btn btn-sm btn-warning" id="rotateRightBack">↻ Derecha</button>
+                            <button class="btn btn-sm btn-danger" id="rotate180Back">↻ 180°</button>
+                            <button class="btn btn-sm btn-outline" id="resetRotationBack">⟲ Reset</button>
+                        </div>
                         <button class="btn btn-primary" id="ocrBackBtn" style="width: 100%; justify-content: center;">🧠 Leer número</button>
-                        <div id="ocrBackStatus" class="ocr-status" style="font-size: 0.8rem;">⏳ Esperando imagen</div>
+                        <div id="ocrBackStatus" class="ocr-status">⏳ Esperando imagen</div>
                         <div id="ocrBackDebug" class="ocr-debug" style="display:none;"></div>
                     </div>
                     <div class="manual-input">
@@ -511,6 +542,7 @@
                     </div>
                 </div>
             </div>
+
             <div style="display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 0.5rem;">
                 <span class="icon-tag">Tesseract.js</span>
                 <span class="badge-ine">INE</span>
@@ -519,10 +551,10 @@
             </div>
         </div>
 
-        <!-- SECCIÓN 2: ORGANIZAR INFORMACIÓN PEGADA -->
+        <!-- ===== SECCIÓN 2: ORGANIZAR INFORMACIÓN PEGADA ===== -->
         <div class="section-divider"></div>
         <div class="card" style="margin-top: 1rem;">
-            <h2><span>📝</span> Sección 2 · Pegar información del cliente</h2>
+            <h2>📝 Sección 2 · Pegar información del cliente</h2>
             <p style="color: #4a5a72; margin-bottom: 0.5rem; font-size: 0.95rem;">
                 Pega el texto con los datos del cliente. Puede estar separado por tabulaciones, comas o saltos de línea.
             </p>
@@ -532,15 +564,15 @@
             <textarea id="textInput" placeholder="Pega aquí el texto con los datos del cliente...">Josefina Garcia Hurtado 	4423821707	4425472273	frabyclar@gmail.com	Rio Queretaro 204, entre Rio Moctezuma y Rio Yaqui, Menchaca ll, Queretaro, CP 76147</textarea>
         </div>
 
-        <!-- SECCIÓN 3: RESULTADO UNIFICADO -->
+        <!-- ===== SECCIÓN 3: RESULTADO UNIFICADO ===== -->
         <div class="section-divider"></div>
         <div class="merge-section">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                 <h2 style="font-size: 1.2rem; color: #14253e; margin: 0;">📄 Información unificada</h2>
                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                    <button class="btn btn-success" id="mergeBtn" style="margin: 0;">🔄 Unificar y organizar</button>
-                    <button class="btn btn-outline" id="clearAllBtn" style="margin: 0;">Limpiar todo</button>
-                    <button class="btn" id="copyMergedBtn" style="margin: 0; background: #0b6e4f;">📋 Copiar todo</button>
+                    <button class="btn btn-success" id="mergeBtn">🔄 Unificar y organizar</button>
+                    <button class="btn btn-outline" id="clearAllBtn">Limpiar todo</button>
+                    <button class="btn" id="copyMergedBtn" style="background: #0b6e4f;">📋 Copiar todo</button>
                 </div>
             </div>
             <div style="margin-top: 1rem;">
@@ -560,17 +592,24 @@
 
         <hr>
         <div class="footer-note">
-            ⚡ <kbd>Ctrl+V</kbd> para pegar imágenes · Arrastra y suelta archivos · Organiza texto con separadores
+            ⚡ <kbd>Ctrl+V</kbd> para pegar imágenes · Arrastra y suelta archivos · Rotación manual disponible
             <br>
             <span style="font-size: 0.8rem; color: #8a9bb0;">📁 Compatible con GitHub Pages</span>
         </div>
     </div>
 
+    <!-- ============================================================ -->
+    <!-- ===== JAVASCRIPT ===== -->
+    <!-- ============================================================ -->
     <script>
         (function() {
             "use strict";
 
-            // ========== DOM ==========
+            // ==========================================================
+            // 1. DOM REFERENCIAS
+            // ==========================================================
+
+            // --- Front (CURP) ---
             const imageFront = document.getElementById('imageFront');
             const previewFront = document.getElementById('previewFront');
             const ocrFrontBtn = document.getElementById('ocrFrontBtn');
@@ -580,6 +619,7 @@
             const setCURPBtn = document.getElementById('setCURPBtn');
             const dropZoneFront = document.getElementById('dropZoneFront');
 
+            // --- Back (número) ---
             const imageBack = document.getElementById('imageBack');
             const previewBack = document.getElementById('previewBack');
             const ocrBackBtn = document.getElementById('ocrBackBtn');
@@ -589,8 +629,8 @@
             const setNumeroBtn = document.getElementById('setNumeroBtn');
             const dropZoneBack = document.getElementById('dropZoneBack');
 
+            // --- Texto y resultados ---
             const textInput = document.getElementById('textInput');
-
             const mergeBtn = document.getElementById('mergeBtn');
             const clearAllBtn = document.getElementById('clearAllBtn');
             const copyMergedBtn = document.getElementById('copyMergedBtn');
@@ -606,188 +646,133 @@
             const curpExtracted = document.getElementById('curpExtracted');
             const numExtracted = document.getElementById('numExtracted');
 
-            // ========== DATOS ==========
-            let extractedData = {
-                numero: '',
-                curp: '',
-                nombre: '',
-                celular: '',
-                celularRef: '',
-                correo: '',
-                direccion: ''
+            // ==========================================================
+            // 2. ESTADO DE LA APLICACIÓN
+            // ==========================================================
+
+            const state = {
+                // Imagen original (sin rotación)
+                original: { front: null, back: null },
+                // Imagen actual (con rotación aplicada)
+                current: { front: null, back: null },
+                // Ángulo de rotación actual (0, 90, 180, 270)
+                rotation: { front: 0, back: 0 },
+                // Datos extraídos
+                extracted: {
+                    numero: '',
+                    curp: '',
+                    nombre: '',
+                    celular: '',
+                    celularRef: '',
+                    correo: '',
+                    direccion: ''
+                }
             };
 
-            // ========== FUNCIONES ==========
+            // ==========================================================
+            // 3. FUNCIONES DE UTILIDAD
+            // ==========================================================
 
-            // ---- LIMPIAR TEXTO: eliminar todo excepto letras y números ----
-            // NO CONVIERTE O→0 ni 0→O, respeta exactamente lo que detectó el OCR
             function cleanText(text) {
                 if (!text) return '';
-                // Solo eliminar caracteres que no sean letras ni números
                 return text.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
             }
 
-            // ---- DETECTAR POSIBLES CONFLICTOS O/0 ----
-            function detectOZeroConflicts(text) {
-                if (!text) return false;
-                // Buscar si hay 'O' o '0' en la CURP
-                return /[O0]/.test(text);
-            }
-
-            // ---- EXTRAER CURP: busca la palabra CURP y extrae lo que está AL LADO o DEBAJO ----
-            function extractCurpFromText(text) {
-                if (!text || text.trim() === '') {
-                    return '';
-                }
-
-                // Dividir el texto en líneas
-                const lines = text.split(/\n/).map(l => l.trim()).filter(l => l.length > 0);
-                
-                // Buscar en cada línea
-                for (let i = 0; i < lines.length; i++) {
-                    const line = lines[i];
-                    const upperLine = line.toUpperCase();
-                    
-                    // Buscar la palabra CURP en la línea
-                    const curpIndex = upperLine.indexOf('CURP');
-                    if (curpIndex !== -1) {
-                        // Extraer TODO lo que está DESPUÉS de CURP en la misma línea
-                        let afterCurp = line.substring(curpIndex + 4);
-                        
-                        // Si no hay nada después en la misma línea, buscar en la siguiente línea
-                        if (afterCurp.trim() === '' && i + 1 < lines.length) {
-                            afterCurp = lines[i + 1];
-                        }
-                        
-                        // Limpiar: eliminar todo excepto letras y números (respetando O y 0)
-                        const cleaned = cleanText(afterCurp);
-                        
-                        // Si tiene al menos 10 caracteres, es una CURP potencial
-                        if (cleaned.length >= 10) {
-                            return cleaned;
-                        }
-                    }
-                }
-                
-                // Si no encontró CURP en una línea específica, buscar en todo el texto
-                const textUpper = text.toUpperCase();
-                const curpIndex = textUpper.indexOf('CURP');
-                if (curpIndex !== -1) {
-                    let afterCurp = text.substring(curpIndex + 4);
-                    afterCurp = afterCurp.substring(0, 30);
-                    const cleaned = cleanText(afterCurp);
-                    if (cleaned.length >= 10) {
-                        return cleaned;
-                    }
-                }
-                
-                // Último recurso: buscar cualquier cadena larga de letras y números
-                const matches = text.match(/[A-Za-z0-9]{10,}/g);
-                if (matches) {
-                    let longest = '';
-                    for (let m of matches) {
-                        if (m.length > longest.length) {
-                            longest = m;
-                        }
-                    }
-                    if (longest.length >= 10) {
-                        return longest.toUpperCase();
-                    }
-                }
-                
-                return '';
-            }
-
-            // ---- EXTRAER NÚMERO DE 13 DÍGITOS ----
-            function extractNumeroFromText(text) {
-                if (!text || text.trim() === '') {
-                    return '';
-                }
-
-                // Buscar 13 dígitos consecutivos
-                const matches = text.match(/\b\d{13}\b/g);
-                if (matches && matches.length > 0) {
-                    return matches[0];
-                }
-
-                // Buscar patrón << seguido de 13 dígitos
-                const numMatch = text.match(/<<\s*(\d{13})/);
-                if (numMatch) {
-                    return numMatch[1];
-                }
-
-                // Buscar 13 dígitos con espacios o guiones
-                const spacedMatch = text.match(/\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d/);
-                if (spacedMatch) {
-                    return spacedMatch[0].replace(/[\s\-.]/g, '');
-                }
-
-                return '';
-            }
-
-            // ---- VALIDAR CURP (solo verifica que tenga formato de 18 caracteres) ----
             function isValidCURP(curp) {
                 if (!curp) return false;
-                const cleaned = curp.trim().toUpperCase();
-                // Solo verificar que tiene 18 caracteres y que son letras/números
-                return /^[A-Z0-9]{18}$/.test(cleaned);
+                return /^[A-Z0-9]{18}$/.test(curp.trim().toUpperCase());
             }
 
             function isValidNumero(num) {
                 if (!num) return false;
-                const cleaned = num.trim().replace(/\s/g, '');
-                return /^\d{13}$/.test(cleaned);
+                return /^\d{13}$/.test(num.trim().replace(/\s/g, ''));
             }
 
-            // ---- Extraer INE (número y CURP) ----
-            function extractINEData(text) {
-                if (!text || text.trim() === '') {
-                    return { numero: '', curp: '' };
+            // ==========================================================
+            // 4. EXTRACCIÓN DE DATOS
+            // ==========================================================
+
+            function extractCurpFromText(text) {
+                if (!text || !text.trim()) return '';
+
+                const lines = text.split(/\n/).map(l => l.trim()).filter(l => l.length > 0);
+
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i];
+                    const idx = line.toUpperCase().indexOf('CURP');
+                    if (idx !== -1) {
+                        let after = line.substring(idx + 4);
+                        if (!after.trim() && i + 1 < lines.length) {
+                            after = lines[i + 1];
+                        }
+                        const cleaned = cleanText(after);
+                        if (cleaned.length >= 10) return cleaned;
+                    }
                 }
 
-                // Extraer CURP usando el método mejorado
-                let curp = extractCurpFromText(text);
-                
-                // Validar: si tiene 18 caracteres, es válida
-                if (curp && curp.length === 18) {
-                    // Si tiene 18, verificar que sean letras/números
-                    if (/^[A-Z0-9]{18}$/.test(curp)) {
-                        // No hacer más correcciones, usar exactamente lo que se extrajo
-                    } else {
-                        // Si tiene caracteres no válidos, limpiar
-                        curp = cleanText(curp);
+                const idx = text.toUpperCase().indexOf('CURP');
+                if (idx !== -1) {
+                    let after = text.substring(idx + 4, idx + 34);
+                    const cleaned = cleanText(after);
+                    if (cleaned.length >= 10) return cleaned;
+                }
+
+                const matches = text.match(/[A-Za-z0-9]{10,}/g);
+                if (matches) {
+                    let longest = '';
+                    for (const m of matches) {
+                        if (m.length > longest.length) longest = m;
                     }
+                    if (longest.length >= 10) return longest.toUpperCase();
+                }
+
+                return '';
+            }
+
+            function extractNumeroFromText(text) {
+                if (!text || !text.trim()) return '';
+
+                const m1 = text.match(/\b\d{13}\b/g);
+                if (m1 && m1.length) return m1[0];
+
+                const m2 = text.match(/<<\s*(\d{13})/);
+                if (m2) return m2[1];
+
+                const m3 = text.match(/\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d[\s\-.]?\d/);
+                if (m3) return m3[0].replace(/[\s\-.]/g, '');
+
+                return '';
+            }
+
+            function extractINEData(text) {
+                if (!text || !text.trim()) return { numero: '', curp: '' };
+
+                let curp = extractCurpFromText(text);
+
+                if (curp && curp.length === 18) {
+                    if (!/^[A-Z0-9]{18}$/.test(curp)) curp = cleanText(curp);
                 } else if (curp && curp.length > 18) {
-                    // Si tiene más de 18, tomar los primeros 18
                     curp = curp.substring(0, 18);
                 } else if (curp && curp.length < 18) {
-                    // Si tiene menos de 18, intentar buscar otra cosa
-                    const matches = text.match(/[A-Z0-9]{18}/gi);
-                    if (matches && matches.length > 0) {
-                        curp = matches[0].toUpperCase();
-                    }
+                    const m = text.match(/[A-Z0-9]{18}/gi);
+                    if (m && m.length) curp = m[0].toUpperCase();
                 }
 
-                // Extraer número
-                let numero = extractNumeroFromText(text);
-
+                const numero = extractNumeroFromText(text);
                 return { numero, curp };
             }
 
-            // ---- Organizar información del cliente ----
+            // ==========================================================
+            // 5. ORGANIZAR DATOS DEL CLIENTE
+            // ==========================================================
+
             function organizeClientInfo(text) {
-                if (!text || text.trim() === '') {
-                    return {
-                        nombre: '',
-                        celular: '',
-                        celularRef: '',
-                        correo: '',
-                        direccion: ''
-                    };
+                if (!text || !text.trim()) {
+                    return { nombre: '', celular: '', celularRef: '', correo: '', direccion: '' };
                 }
 
+                // Intentar separar por tabulaciones
                 let parts = text.split(/\t+/).map(s => s.trim()).filter(s => s.length > 0);
-
                 if (parts.length >= 5) {
                     return {
                         nombre: parts[0] || '',
@@ -798,41 +783,50 @@
                     };
                 }
 
-                const lines = text.split(/[;\n]+/).map(l => l.trim()).filter(l => l.length > 0);
+                // Extraer correo
+                const emailMatch = text.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g);
+                const correo = emailMatch ? emailMatch[0] : '';
 
-                if (lines.length === 1 && text.includes(',')) {
-                    const commaParts = text.split(/,\s*/).map(s => s.trim());
-                    let email = '';
-                    const emailRegex = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
-                    const emailMatch = text.match(emailRegex);
-                    if (emailMatch) email = emailMatch[0];
+                // Extraer teléfonos
+                const phones = (text.match(/\b\d{10}\b/g) || []);
+                const celular = phones.length > 0 ? phones[0] : '';
+                const celularRef = phones.length > 1 ? phones[1] : '';
 
-                    const phoneRegex = /\b\d{10}\b/g;
-                    const phones = text.match(phoneRegex) || [];
+                // Extraer dirección (con CP)
+                const addrMatch = text.match(/(?:[Cc]alle|[Aa]v\.|[Rr]io).*?(?:CP\s*\d{5}|\d{5})/);
+                const direccion = addrMatch ? addrMatch[0] : '';
 
-                    const addressMatch = text.match(/(?:[Cc]alle|[Aa]v\.|[Rr]io).*?(?:CP\s*\d{5}|\d{5})/);
-                    let address = addressMatch ? addressMatch[0] : '';
+                // Extraer nombre (lo que queda)
+                let remaining = text;
+                phones.forEach(p => remaining = remaining.replace(p, ''));
+                if (correo) remaining = remaining.replace(correo, '');
+                if (direccion) remaining = remaining.replace(direccion, '');
+                remaining = remaining.replace(/[,;]\s*/g, ' ').trim();
 
-                    let nombre = text;
-                    phones.forEach(p => nombre = nombre.replace(p, ''));
-                    if (email) nombre = nombre.replace(email, '');
-                    if (address) nombre = nombre.replace(address, '');
-                    nombre = nombre.replace(/[,;]\s*/g, ' ').trim();
-
-                    return {
-                        nombre: nombre || '',
-                        celular: phones.length > 0 ? phones[0] : '',
-                        celularRef: phones.length > 1 ? phones[1] : '',
-                        correo: email || '',
-                        direccion: address || ''
-                    };
+                let nombre = '';
+                if (remaining.length < 60) {
+                    nombre = remaining;
+                } else {
+                    const lines = text.split(/\n/).map(l => l.trim()).filter(l => l.length > 0);
+                    for (const line of lines) {
+                        const isEmail = /@/.test(line);
+                        const isPhone = /\b\d{10}\b/.test(line);
+                        const isAddr = /(?:[Cc]alle|[Aa]v\.|[Rr]io).*?(?:CP\s*\d{5}|\d{5})/.test(line);
+                        if (!isEmail && !isPhone && !isAddr && line.length < 60) {
+                            nombre = line;
+                            break;
+                        }
+                    }
                 }
 
-                const lineParts = text.split(/\n/).map(l => l.trim()).filter(l => l.length > 0);
-                let nombre = '',
-                    celular = '',
-                    celularRef = '',
-                    correo = '',
-                    direccion = '';
+                return { nombre, celular, celularRef, correo, direccion };
+            }
 
-                const emailRegex = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[
+            function formatMerged(data) {
+                let out = '';
+                if (data.nombre) out += `👤 NOMBRE DEL CLIENTE: ${data.nombre}\n`;
+                if (data.curp) out += `🆔 CURP: ${data.curp}\n`;
+                if (data.numero) out += `🔢 NÚMERO INE (13 dígitos): ${data.numero}\n`;
+                if (data.celular) out += `📱 CELULAR CLIENTE: ${data.celular}\n`;
+                if (data.celularRef) out += `📞 CELULAR REFERENCIA: ${data.celularRef}\n`;
+                if (data.c
